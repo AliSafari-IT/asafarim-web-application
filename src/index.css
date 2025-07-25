@@ -1,0 +1,51 @@
+/* Base styles */
+:root {
+  --primary-color-light: #3498db;
+  --primary-color-dark: #222;
+  --secondary-color-light: #2ecc71;
+  --secondary-color-dark: #222;
+  --success-color-light: #2ecc71;
+  --success-color-dark: #222;
+  --error-color-light: #e74c3c;
+  --error-color-dark: #222;
+  --warning-color-light: #f1c40f;
+  --warning-color-dark: #222;
+  --info-color-light: #3498db;
+  --info-color-dark: #222;
+  --text-color-light: #333;
+  --text-color-dark: #f5f5f5;
+  --bg-color-light: #f5f5f5;
+  --bg-color-dark: #222;
+  --card-bg-light: #fff;
+  --card-bg-dark: #333;
+  --border-color-light: #ddd;
+  --border-color-dark: #444;
+}
+
+[data-theme="light"] {
+  --primary-color: var(--primary-color-light);
+  --secondary-color: var(--secondary-color-light);
+  --success-color: var(--success-color-light);
+  --error-color: var(--error-color-light);
+  --warning-color: var(--warning-color-light);
+  --info-color: var(--info-color-light);
+  --text-color: var(--text-color-light);
+
+  --bg-color: var(--bg-color-light);
+  --card-bg: var(--card-bg-light);
+  --border-color: var(--border-color-light);
+}
+
+[data-theme="dark"] {
+  --primary-color: var(--primary-color-dark);
+  --secondary-color: var(--secondary-color-dark);
+  --success-color: var(--success-color-dark);
+  --error-color: var(--error-color-dark);
+  --warning-color: var(--warning-color-dark);
+  --info-color: var(--info-color-dark);
+  --text-color: var(--text-color-dark);
+    
+  --bg-color: var(--bg-color-dark);
+  --card-bg: var(--card-bg-dark);
+  --border-color: var(--border-color-dark);
+}

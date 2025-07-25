@@ -1,0 +1,64 @@
+{
+  "name": "asafarim-web-application",
+  "version": "0.0.1",
+  "description": "ASafariM web application",
+  "type": "module",
+  "scripts": {
+    "rm": "rm -rf dist && rm -rf node_modules && rm -rf package-lock.json && rm -rf pnpm-lock.yaml && rm -rf yarn.lock",
+    "kp": "kill-port 5173 3300 3301",
+    "dev": "pnpm kp && vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "serve": "pnpm kp && node md-server.js --watch",
+    "start": "concurrently \"kill-port 3300 && node md-server.js\" \"kill-port 5173 && pnpm exec vite\"",
+    "test-server": "pnpm kp && node md-server.js",
+    "prod": "pnpm kp && cross-env NODE_ENV=production node md-server.js",
+    "build-and-serve": "pnpm build && pnpm prod",
+    "build:gh": "vite build --config vite.config.gh.ts",
+    "gh-pages": "npm run build:gh && gh-pages -d dist",
+    "deploy": "pnpm run gh-pages",
+    "deploy:prod": "pnpm  run deploy && git push origin main --force"
+  },
+  "dependencies": {
+    "@asafarim/complete-md-viewer": "^1.1.1",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.8.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.23",
+    "@types/react-dom": "^18.2.17",
+    "@types/react-router-dom": "^5.3.3",
+    "@vitejs/plugin-react": "^4.2.1",
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "gh-pages": "^6.1.1",
+    "kill-port": "^2.0.1",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.8"
+  },
+  "keywords": [
+    "asafarim",
+    "asafarim-web2",
+    "web2",
+    "viewer",
+    "react",
+    "demo"
+  ],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.13.1",
+  "homepage": "https://alisafari-it.github.io/demo-complete-md-viewer/Readme.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AliSafari-IT/demo-complete-md-viewer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/AliSafari-IT/demo-complete-md-viewer/issues"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
