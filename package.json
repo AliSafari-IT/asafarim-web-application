@@ -41,24 +41,22 @@
   },
   "keywords": [
     "asafarim",
-    "asafarim-web2",
-    "web2",
-    "viewer",
+    "asafarim-web-application",
     "react",
     "demo"
   ],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.13.1",
-  "homepage": "https://alisafari-it.github.io/demo-complete-md-viewer/Readme.md",
+  "homepage": "https://alisafari-it.github.io/asafarim-web-application/Readme.md",
   "repository": {
     "type": "git",
-    "url": "https://github.com/AliSafari-IT/demo-complete-md-viewer.git"
+    "url": "https://github.com/AliSafari-IT/asafarim-web-application.git"
   },
   "bugs": {
-    "url": "https://github.com/AliSafari-IT/demo-complete-md-viewer/issues"
+    "url": "https://github.com/AliSafari-IT/asafarim-web-application/issues"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=18.0.0"
   }
 }

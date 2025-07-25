@@ -1,17 +1,23 @@
+@import '@asafarim/complete-md-viewer/dist/style.css';
+
 /* Base styles */
 :root {
   --primary-color-light: #3498db;
-  --primary-color-dark: #222;
-  --secondary-color-light: #2ecc71;
-  --secondary-color-dark: #222;
-  --success-color-light: #2ecc71;
-  --success-color-dark: #222;
+  --primary-color-dark: #2d5db8;
+  --secondary-color-light: #0594b8;
+  --secondary-color-dark: #05404e;
+  --muted-color-light: #7f8c8d;
+  --muted-color-dark: #2c3e50;
+  --inverse-color-light: #000000;
+  --inverse-color-dark: #ffffff;
+  --success-color-light: #15793e;
+  --success-color-dark: #159903;
   --error-color-light: #e74c3c;
-  --error-color-dark: #222;
-  --warning-color-light: #f1c40f;
-  --warning-color-dark: #222;
-  --info-color-light: #3498db;
-  --info-color-dark: #222;
+  --error-color-dark: #c00909;
+  --warning-color-light: #fcd640;
+  --warning-color-dark: #cdaA00;
+  --info-color-light: #64befa;
+  --info-color-dark: #1069a5;
   --text-color-light: #333;
   --text-color-dark: #f5f5f5;
   --bg-color-light: #f5f5f5;
@@ -25,9 +31,11 @@
 [data-theme="light"] {
   --primary-color: var(--primary-color-light);
   --secondary-color: var(--secondary-color-light);
+  --muted-color: var(--muted-color-light);
   --success-color: var(--success-color-light);
   --error-color: var(--error-color-light);
   --warning-color: var(--warning-color-light);
+  --inverse-color: var(--inverse-color-light);
   --info-color: var(--info-color-light);
   --text-color: var(--text-color-light);
 
@@ -39,6 +47,8 @@
 [data-theme="dark"] {
   --primary-color: var(--primary-color-dark);
   --secondary-color: var(--secondary-color-dark);
+  --muted-color: var(--muted-color-dark);
+  --inverse-color: var(--inverse-color-dark);
   --success-color: var(--success-color-dark);
   --error-color: var(--error-color-dark);
   --warning-color: var(--warning-color-dark);

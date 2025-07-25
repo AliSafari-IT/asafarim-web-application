@@ -33,8 +33,13 @@ const Navbar = () => {
   return (
     <nav className={`navbar ${theme}`}>
       <div className="navbar-brand">
-        <Link to="/" className="navbar-logo">ASafariM App</Link>
-        
+        <Link to="/" className="navbar-logo">
+          <img src="/logoT.svg" width={30} alt="Logo" className="logo-image" />
+          <span className="logo-text">
+          ASafariM
+          </span>
+        </Link>
+
         {/* Hamburger menu button for mobile */}
         <button 
           className={`hamburger-menu ${mobileMenuOpen ? 'open' : ''}`}
@@ -51,8 +56,7 @@ const Navbar = () => {
       <div className={`navbar-menu ${mobileMenuOpen ? 'open' : ''}`}>
         <Link to="/" className="navbar-item" onClick={handleNavLinkClick}>Home</Link>
         <Link to="/dashboard" className="navbar-item" onClick={handleNavLinkClick}>Dashboard</Link>
-        <Link to="/docs" className="navbar-item" onClick={handleNavLinkClick}>Standalone Viewer</Link>
-        <Link to="/md-docs" className="navbar-item" onClick={handleNavLinkClick}>Integrated Viewer</Link>
+        <Link to="/md-docs" className="navbar-item" onClick={handleNavLinkClick}>Documentation</Link>
         <button 
           onClick={toggleTheme} 
           className="theme-toggle-btn"
