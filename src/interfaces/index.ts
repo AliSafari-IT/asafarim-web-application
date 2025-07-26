@@ -10,6 +10,7 @@ export type { ITechStack } from './ITechStack';
 export type { IUser, IUserPreferences } from './IUser';
 export type { IUserRegistration, IUserRegistrationResponse } from './IUserRegistration';
 export type { IUserLogin, IUserLoginResponse, IUserProfile } from './IUserAuth';
+export type { IUserSession, IAuthContext } from './IUserSession';
 export type { 
     IUserProjectAssignment, 
     IProjectPermissions, 
@@ -24,3 +25,28 @@ export type {
     ITwoFactorSetup, 
     ITwoFactorVerification 
 } from './IUserSecurity';
+
+// Project management interfaces
+export type {
+    IProjectCreationRequest,
+    IProjectCreationResponse,
+    IProjectUpdateRequest,
+    IUserProjectsList
+} from './IProjectManagement';
+
+// Dashboard interfaces
+export type {
+    IDashboardState,
+    IProjectFilter,
+    IDashboardStats,
+    IProjectFormData,
+    IProjectValidationErrors
+} from './IDashboard';
+
+// API interfaces
+export type {
+    IApiResponse,
+    IPaginatedResponse,
+    IApiError,
+    IValidationError
+} from './IApiResponse';
