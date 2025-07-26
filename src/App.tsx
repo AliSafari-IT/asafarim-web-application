@@ -6,6 +6,7 @@ import {
   useLocation,
 } from "react-router-dom";
 import { CustomThemeProvider } from "./context/ThemeContext";
+import { AuthProvider } from "./context/AuthContext";
 import { Suspense } from "react";
 
 // Layout
@@ -15,6 +16,7 @@ import Layout from "./components/layout/Layout";
 import Home from "./components/Home/Home";
 import Dashboard from "./components/Dashboard/Dashboard";
 import MarkdownViewer from "./components/MarkdownViewer/MarkdownViewer";
+import Profile from "./components/Profile/Profile";
 
 // Component to conditionally render content based on the current route
 const AppContent = () => {
@@ -106,6 +108,7 @@ const AppContent = () => {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/profile" element={<Profile />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
@@ -120,15 +123,17 @@ function App() {
 
   return (
     <CustomThemeProvider>
-      <div className="app">
-        <BrowserRouter basename={basename}>
-          <Layout>
-            <Suspense fallback={<div>Loading...</div>}>
-              <AppContent />
-            </Suspense>
-          </Layout>
-        </BrowserRouter>
-      </div>
+      <AuthProvider>
+        <div className="app">
+          <BrowserRouter basename={basename}>
+            <Layout>
+              <Suspense fallback={<div>Loading...</div>}>
+                <AppContent />
+              </Suspense>
+            </Layout>
+          </BrowserRouter>
+        </div>
+      </AuthProvider>
     </CustomThemeProvider>
   );
 }

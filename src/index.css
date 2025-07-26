@@ -1,4 +1,5 @@
 @import '@asafarim/complete-md-viewer/dist/style.css';
+@import './styles/auth.css';
 
 /* Base styles */
 :root {
@@ -20,12 +21,26 @@
   --info-color-dark: #1069a5;
   --text-color-light: #333;
   --text-color-dark: #f5f5f5;
+  --text-secondary-light: #666;
+  --text-secondary-dark: #aaa;
   --bg-color-light: #f5f5f5;
   --bg-color-dark: #222;
+  --bg-secondary-light: #fafafa;
+  --bg-secondary-dark: #2a2a2a;
   --card-bg-light: #fff;
   --card-bg-dark: #333;
   --border-color-light: #ddd;
   --border-color-dark: #444;
+  --hover-bg-light: #f0f0f0;
+  --hover-bg-dark: #3a3a3a;
+  --primary-hover-light: #2980b9;
+  --primary-hover-dark: #1e4a8c;
+  --primary-color-alpha-light: rgba(52, 152, 219, 0.1);
+  --primary-color-alpha-dark: rgba(45, 93, 184, 0.1);
+  --danger-color-light: #dc2626;
+  --danger-color-dark: #ef4444;
+  --danger-bg-light: #fee;
+  --danger-bg-dark: rgba(239, 68, 68, 0.1);
 }
 
 [data-theme="light"] {
@@ -38,10 +53,16 @@
   --inverse-color: var(--inverse-color-light);
   --info-color: var(--info-color-light);
   --text-color: var(--text-color-light);
-
+  --text-secondary: var(--text-secondary-light);
   --bg-color: var(--bg-color-light);
+  --bg-secondary: var(--bg-secondary-light);
   --card-bg: var(--card-bg-light);
   --border-color: var(--border-color-light);
+  --hover-bg: var(--hover-bg-light);
+  --primary-hover: var(--primary-hover-light);
+  --primary-color-alpha: var(--primary-color-alpha-light);
+  --danger-color: var(--danger-color-light);
+  --danger-bg: var(--danger-bg-light);
 }
 
 [data-theme="dark"] {
@@ -54,8 +75,14 @@
   --warning-color: var(--warning-color-dark);
   --info-color: var(--info-color-dark);
   --text-color: var(--text-color-dark);
-    
+  --text-secondary: var(--text-secondary-dark);
   --bg-color: var(--bg-color-dark);
+  --bg-secondary: var(--bg-secondary-dark);
   --card-bg: var(--card-bg-dark);
   --border-color: var(--border-color-dark);
+  --hover-bg: var(--hover-bg-dark);
+  --primary-hover: var(--primary-hover-dark);
+  --primary-color-alpha: var(--primary-color-alpha-dark);
+  --danger-color: var(--danger-color-dark);
+  --danger-bg: var(--danger-bg-dark);
 }
