@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { IUserPreferences, IUpdateUserPreferences } from '../interfaces/IUser';
+import { ThemeContext } from './ThemeContext';
 
 // Types based on your API DTOs
 export interface User {
@@ -65,6 +66,7 @@ interface AuthContextType {
   preferences: IUserPreferences | null;
   getPreferences: () => Promise<ApiResponse<IUserPreferences> | null>;
   updatePreferences: (preferences: IUpdateUserPreferences) => Promise<ApiResponse<IUserPreferences> | null>;
+  applyPreferences: (preferences: IUserPreferences) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -78,7 +80,44 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [preferences, setPreferences] = useState<IUserPreferences | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Access theme context to apply theme preferences
+  const themeContext = useContext(ThemeContext);
+
   const isAuthenticated = !!user && !!token;
+
+  // Function to apply user preferences to the current state
+  const applyUserPreferences = (userPreferences: IUserPreferences) => {
+    try {
+      // Apply theme preference
+      if (userPreferences.theme && userPreferences.theme !== 'auto') {
+        if (themeContext?.setTheme) {
+          themeContext.setTheme(userPreferences.theme);
+          console.log(`Applied theme preference: ${userPreferences.theme}`);
+        }
+      }
+
+      // Apply language preference (if you have i18n)
+      if (userPreferences.language) {
+        // You can add language switching logic here when you implement i18n
+        console.log(`User language preference: ${userPreferences.language}`);
+      }
+
+      // Apply timezone preference
+      if (userPreferences.timezone) {
+        // You can store timezone in a global state or context if needed
+        console.log(`User timezone preference: ${userPreferences.timezone}`);
+      }
+
+      // Store notification preferences for use in components
+      if (userPreferences.emailNotifications !== undefined || userPreferences.pushNotifications !== undefined) {
+        console.log(`Notification preferences - Email: ${userPreferences.emailNotifications}, Push: ${userPreferences.pushNotifications}`);
+      }
+
+      console.log('User preferences applied successfully');
+    } catch (error) {
+      console.error('Error applying user preferences:', error);
+    }
+  };
 
   // Initialize auth state from localStorage
   useEffect(() => {
@@ -105,7 +144,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             // Load preferences from localStorage or fetch from API
             const storedPreferences = localStorage.getItem('user_preferences');
             if (storedPreferences) {
-              setPreferences(JSON.parse(storedPreferences));
+              const parsedPreferences = JSON.parse(storedPreferences);
+              setPreferences(parsedPreferences);
+              // Apply stored preferences to current state
+              applyUserPreferences(parsedPreferences);
             } else {
               // Fetch preferences from API if not in localStorage
               try {
@@ -121,6 +163,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                   if (prefsResult.success && prefsResult.data) {
                     setPreferences(prefsResult.data);
                     localStorage.setItem('user_preferences', JSON.stringify(prefsResult.data));
+                    // Apply fetched preferences to current state
+                    applyUserPreferences(prefsResult.data);
                   }
                 }
               } catch (error) {
@@ -177,6 +221,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Store in localStorage
         localStorage.setItem('auth_token', authToken);
         localStorage.setItem('auth_user', JSON.stringify(userData));
+
+        // Fetch and apply user preferences after successful login
+        try {
+          const prefsResponse = await fetch(`${DOTNET_API_BASE_URL}/users/preferences`, {
+            headers: {
+              'Authorization': `Bearer ${authToken}`,
+              'Content-Type': 'application/json',
+            },
+          });
+          
+          if (prefsResponse.ok) {
+            const prefsResult: ApiResponse<IUserPreferences> = await prefsResponse.json();
+            if (prefsResult.success && prefsResult.data) {
+              setPreferences(prefsResult.data);
+              localStorage.setItem('user_preferences', JSON.stringify(prefsResult.data));
+              
+              // Apply preferences to current state
+              applyUserPreferences(prefsResult.data);
+            }
+          } else {
+            console.log('Preferences not available on login, using defaults');
+          }
+        } catch (error) {
+          console.error('Error fetching preferences after login:', error);
+        }
       }
 
       return result;
@@ -213,6 +282,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Store in localStorage
         localStorage.setItem('auth_token', authToken);
         localStorage.setItem('auth_user', JSON.stringify(userData));
+
+        // For new users, apply default preferences (or fetch if they exist)
+        try {
+          const prefsResponse = await fetch(`${DOTNET_API_BASE_URL}/users/preferences`, {
+            headers: {
+              'Authorization': `Bearer ${authToken}`,
+              'Content-Type': 'application/json',
+            },
+          });
+          
+          if (prefsResponse.ok) {
+            const prefsResult: ApiResponse<IUserPreferences> = await prefsResponse.json();
+            if (prefsResult.success && prefsResult.data) {
+              setPreferences(prefsResult.data);
+              localStorage.setItem('user_preferences', JSON.stringify(prefsResult.data));
+              
+              // Apply preferences to current state
+              applyUserPreferences(prefsResult.data);
+            }
+          } else {
+            console.log('No preferences found for new user, using defaults');
+          }
+        } catch (error) {
+          console.error('Error fetching preferences after registration:', error);
+        }
       }
 
       return result;
@@ -333,6 +427,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (result.success && result.data) {
         setPreferences(result.data);
         localStorage.setItem('user_preferences', JSON.stringify(result.data));
+        // Apply preferences to current state when manually fetched
+        applyUserPreferences(result.data);
       }
 
       return result;
@@ -394,6 +490,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (result.success && result.data) {
         setPreferences(result.data);
         localStorage.setItem('user_preferences', JSON.stringify(result.data));
+        // Apply updated preferences to current state immediately
+        applyUserPreferences(result.data);
       }
 
       return result;
@@ -420,6 +518,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     preferences,
     getPreferences,
     updatePreferences,
+    applyPreferences: applyUserPreferences,
   };
 
   return (
