@@ -46,6 +46,7 @@ namespace ASafariM.Api.Models
         public DateTime? LastLoginAt { get; set; }
         
         // Navigation properties
+        public virtual UserPreferences? Preferences { get; set; }
         public virtual ICollection<Project> Projects { get; set; } = new List<Project>();
         public virtual ICollection<Repository> Repositories { get; set; } = new List<Repository>();
     }

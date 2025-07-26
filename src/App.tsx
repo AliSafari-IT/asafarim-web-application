@@ -17,6 +17,10 @@ import Home from "./components/Home/Home";
 import Dashboard from "./components/Dashboard/Dashboard";
 import MarkdownViewer from "./components/MarkdownViewer/MarkdownViewer";
 import Profile from "./components/Profile/Profile";
+import UserSettings from "./components/UserSettings/UserSettings";
+
+// Styles
+import "./styles/settings.css";
 
 // Component to conditionally render content based on the current route
 const AppContent = () => {
@@ -43,6 +47,10 @@ const AppContent = () => {
       return "https://asafarim.com/api"; // Adjust this URL as needed
     }
 
+    // For asafarim.be, return the appropriate API base URL
+    if (window.location.hostname === "asafarim.be") {
+      return "https://asafarim.be/api"; // Adjust this URL as needed
+    }
     // Default case, return null or a fallback URL
     console.warn("Unknown environment, API calls may not work as expected.");
     return null;
@@ -66,7 +74,7 @@ const AppContent = () => {
   );
 
   const apiBaseUrl = getApiBaseUrl();
-  console.log("API Base URL:", apiBaseUrl);
+  console.log("Nodejs API Base URL:", apiBaseUrl);
 
   // If the path starts with /docs, render the StandaloneMarkdownViewer
   if (location.pathname.startsWith("/docs")) {
@@ -109,6 +117,7 @@ const AppContent = () => {
       <Route path="/" element={<Home />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/profile" element={<Profile />} />
+      <Route path="/settings" element={<UserSettings />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

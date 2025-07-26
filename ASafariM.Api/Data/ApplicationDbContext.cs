@@ -11,6 +11,7 @@ namespace ASafariM.Api.Data
         }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<UserPreferences> UserPreferences { get; set; }
         public DbSet<Project> Projects { get; set; }
         public DbSet<TechStack> TechStacks { get; set; }
         public DbSet<Repository> Repositories { get; set; }
@@ -65,6 +66,13 @@ namespace ASafariM.Api.Data
                 .WithMany(p => p.Repositories)
                 .HasForeignKey(r => r.ProjectId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            // Configure UserPreferences relationship
+            modelBuilder.Entity<UserPreferences>()
+                .HasOne(up => up.User)
+                .WithOne(u => u.Preferences)
+                .HasForeignKey<UserPreferences>(up => up.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Configure indexes
             modelBuilder.Entity<User>()

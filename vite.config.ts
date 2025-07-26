@@ -8,11 +8,13 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
+      // Proxy for Node.js backend (preferences, etc.)
       '/api': {
         target: 'http://localhost:3300',
         changeOrigin: true,
         rewrite: (path) => path
       }
+      // Note: .NET backend (auth) is accessed directly via http://localhost:5242/api
     }
   },
   build: {

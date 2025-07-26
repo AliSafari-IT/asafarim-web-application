@@ -101,6 +101,36 @@ namespace ASafariM.Api.DTOs
         public string? Avatar { get; set; }
     }
 
+    // User Preferences DTOs
+    public class UserPreferencesDto
+    {
+        public string Theme { get; set; } = "light";
+        public string Language { get; set; } = "en";
+        public string Timezone { get; set; } = "UTC";
+        public bool EmailNotifications { get; set; } = true;
+        public bool PushNotifications { get; set; } = true;
+        public string ProjectVisibility { get; set; } = "public";
+    }
+
+    public class UpdateUserPreferencesDto
+    {
+        [StringLength(20)]
+        public string? Theme { get; set; }
+
+        [StringLength(10)]
+        public string? Language { get; set; }
+
+        [StringLength(50)]
+        public string? Timezone { get; set; }
+
+        public bool? EmailNotifications { get; set; }
+
+        public bool? PushNotifications { get; set; }
+
+        [StringLength(20)]
+        public string? ProjectVisibility { get; set; }
+    }
+
     public class ChangePasswordDto
     {
         [Required]

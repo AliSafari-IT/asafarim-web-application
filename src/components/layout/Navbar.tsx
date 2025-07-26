@@ -88,7 +88,9 @@ const Navbar = () => {
         
         <div className={`navbar-menu ${mobileMenuOpen ? 'open' : ''}`}>
           <Link to="/" className="navbar-item" onClick={handleNavLinkClick}>Home</Link>
-          <Link to="/dashboard" className="navbar-item" onClick={handleNavLinkClick}>Dashboard</Link>
+          {isAuthenticated && (
+            <Link to="/dashboard" className="navbar-item" onClick={handleNavLinkClick}>Dashboard</Link>
+          )}
           <Link to="/md-docs" className="navbar-item" onClick={handleNavLinkClick}>Documentation</Link>
           
           <div className="navbar-actions">
