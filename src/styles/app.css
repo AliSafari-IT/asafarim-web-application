@@ -99,6 +99,13 @@ body {
   color: var(--primary-color);
 }
 
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 100%;
+}
+
 .theme-toggle-btn {
   background: none;
   border: none;

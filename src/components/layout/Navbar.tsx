@@ -109,14 +109,27 @@ const Navbar = () => {
                     <button 
                       className="btn btn-outline"
                       onClick={handleLoginClick}
+                      title='Sign In'
                     >
-                      Sign In
+                      <svg className="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                        <polyline points="10,17 15,12 10,7"/>
+                        <line x1="15" y1="12" x2="3" y2="12"/>
+                      </svg>
+                      
                     </button>
                     <button 
                       className="btn btn-primary"
                       onClick={handleRegisterClick}
+                      title='Sign Up'
                     >
-                      Sign Up
+                      <svg className="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <line x1="19" y1="6" x2="19" y2="16" strokeWidth="2.5"/>
+                        <line x1="24" y1="11" x2="14" y2="11" strokeWidth="2.5"/>
+                      </svg>
+                      
                     </button>
                   </div>
                 )}
