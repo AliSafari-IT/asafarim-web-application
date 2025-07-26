@@ -5,11 +5,13 @@ type ThemeType = 'light' | 'dark';
 interface ThemeContextType {
   theme: ThemeType;
   toggleTheme: () => void;
+  setTheme: (theme: ThemeType) => void;
 }
 
 export const ThemeContext = createContext<ThemeContextType>({
   theme: 'light',
   toggleTheme: () => {},
+  setTheme: () => {},
 });
 
 interface ThemeProviderProps {
@@ -30,6 +32,11 @@ export const CustomThemeProvider = ({ children }: ThemeProviderProps) => {
     });
   };
 
+  const updateTheme = (newTheme: ThemeType) => {
+    setTheme(newTheme);
+    localStorage.setItem('smv-theme', newTheme);
+  };
+
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     // Apply theme class to body for backward compatibility with existing components
@@ -43,7 +50,7 @@ export const CustomThemeProvider = ({ children }: ThemeProviderProps) => {
   }, [theme]);
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme: updateTheme }}>
       {children}
     </ThemeContext.Provider>
   );

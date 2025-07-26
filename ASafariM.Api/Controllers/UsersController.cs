@@ -26,7 +26,9 @@ namespace ASafariM.Api.Controllers
         {
             try
             {
-                var userId = User?.FindFirst("sub")?.Value ?? User?.FindFirst("id")?.Value;
+                var userId = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value 
+                    ?? User?.FindFirst("sub")?.Value 
+                    ?? User?.FindFirst("id")?.Value;
                 if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
                 {
                     return Unauthorized(ApiResponse<UserProfileDto>.ErrorResult("Invalid token.", statusCode: 401));
@@ -128,7 +130,9 @@ namespace ASafariM.Api.Controllers
 
             try
             {
-                var userId = User?.FindFirst("sub")?.Value ?? User?.FindFirst("id")?.Value;
+                var userId = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value 
+                    ?? User?.FindFirst("sub")?.Value 
+                    ?? User?.FindFirst("id")?.Value;
                 if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
                 {
                     return Unauthorized(ApiResponse<UserDto>.ErrorResult("Invalid token.", statusCode: 401));
@@ -193,6 +197,128 @@ namespace ASafariM.Api.Controllers
             }
         }
 
+        [HttpGet("preferences")]
+        public async Task<ActionResult<ApiResponse<UserPreferencesDto>>> GetUserPreferences()
+        {
+            try
+            {
+                var userId = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value 
+                    ?? User?.FindFirst("sub")?.Value 
+                    ?? User?.FindFirst("id")?.Value;
+                if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
+                {
+                    return Unauthorized(ApiResponse<UserPreferencesDto>.ErrorResult("Invalid token.", statusCode: 401));
+                }
+
+                var preferences = await _context.UserPreferences
+                    .Where(up => up.UserId == userGuid && up.IsActive && !up.IsDeleted)
+                    .FirstOrDefaultAsync();
+
+                UserPreferencesDto preferencesDto;
+                if (preferences == null)
+                {
+                    // Return default preferences if none exist
+                    preferencesDto = new UserPreferencesDto();
+                }
+                else
+                {
+                    preferencesDto = new UserPreferencesDto
+                    {
+                        Theme = preferences.Theme,
+                        Language = preferences.Language,
+                        Timezone = preferences.Timezone,
+                        EmailNotifications = preferences.EmailNotifications,
+                        PushNotifications = preferences.PushNotifications,
+                        ProjectVisibility = preferences.ProjectVisibility
+                    };
+                }
+
+                return Ok(ApiResponse<UserPreferencesDto>.SuccessResult(preferencesDto, "User preferences retrieved successfully."));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while retrieving user preferences");
+                return StatusCode(500, ApiResponse<UserPreferencesDto>.ErrorResult(
+                    "An error occurred while retrieving user preferences.", statusCode: 500));
+            }
+        }
+
+        [HttpPut("preferences")]
+        public async Task<ActionResult<ApiResponse<UserPreferencesDto>>> UpdateUserPreferences([FromBody] UpdateUserPreferencesDto updatePreferencesDto)
+        {
+            try
+            {
+                var userId = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value 
+                    ?? User?.FindFirst("sub")?.Value 
+                    ?? User?.FindFirst("id")?.Value;
+                if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
+                {
+                    return Unauthorized(ApiResponse<UserPreferencesDto>.ErrorResult("Invalid token.", statusCode: 401));
+                }
+
+                var preferences = await _context.UserPreferences
+                    .Where(up => up.UserId == userGuid && up.IsActive && !up.IsDeleted)
+                    .FirstOrDefaultAsync();
+
+                if (preferences == null)
+                {
+                    // Create new preferences if none exist
+                    preferences = new UserPreferences
+                    {
+                        UserId = userGuid,
+                        Theme = updatePreferencesDto.Theme ?? "light",
+                        Language = updatePreferencesDto.Language ?? "en",
+                        Timezone = updatePreferencesDto.Timezone ?? "UTC",
+                        EmailNotifications = updatePreferencesDto.EmailNotifications ?? true,
+                        PushNotifications = updatePreferencesDto.PushNotifications ?? true,
+                        ProjectVisibility = updatePreferencesDto.ProjectVisibility ?? "public"
+                    };
+                    _context.UserPreferences.Add(preferences);
+                }
+                else
+                {
+                    // Update existing preferences
+                    if (updatePreferencesDto.Theme != null)
+                        preferences.Theme = updatePreferencesDto.Theme;
+                    
+                    if (updatePreferencesDto.Language != null)
+                        preferences.Language = updatePreferencesDto.Language;
+                    
+                    if (updatePreferencesDto.Timezone != null)
+                        preferences.Timezone = updatePreferencesDto.Timezone;
+                    
+                    if (updatePreferencesDto.EmailNotifications.HasValue)
+                        preferences.EmailNotifications = updatePreferencesDto.EmailNotifications.Value;
+                    
+                    if (updatePreferencesDto.PushNotifications.HasValue)
+                        preferences.PushNotifications = updatePreferencesDto.PushNotifications.Value;
+                    
+                    if (updatePreferencesDto.ProjectVisibility != null)
+                        preferences.ProjectVisibility = updatePreferencesDto.ProjectVisibility;
+                }
+
+                await _context.SaveChangesAsync();
+
+                var preferencesDto = new UserPreferencesDto
+                {
+                    Theme = preferences.Theme,
+                    Language = preferences.Language,
+                    Timezone = preferences.Timezone,
+                    EmailNotifications = preferences.EmailNotifications,
+                    PushNotifications = preferences.PushNotifications,
+                    ProjectVisibility = preferences.ProjectVisibility
+                };
+
+                return Ok(ApiResponse<UserPreferencesDto>.SuccessResult(preferencesDto, "User preferences updated successfully."));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while updating user preferences");
+                return StatusCode(500, ApiResponse<UserPreferencesDto>.ErrorResult(
+                    "An error occurred while updating user preferences.", statusCode: 500));
+            }
+        }
+
         [HttpGet("projects")]
         public async Task<ActionResult<PaginatedResponse<ProjectSummaryDto>>> GetUserProjects(
             [FromQuery] int page = 1,
@@ -202,7 +328,9 @@ namespace ASafariM.Api.Controllers
         {
             try
             {
-                var userId = User?.FindFirst("sub")?.Value ?? User?.FindFirst("id")?.Value;
+                var userId = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value 
+                    ?? User?.FindFirst("sub")?.Value 
+                    ?? User?.FindFirst("id")?.Value;
                 if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
                 {
                     return Unauthorized(ApiResponse<List<ProjectSummaryDto>>.ErrorResult("Invalid token.", statusCode: 401));
@@ -274,7 +402,9 @@ namespace ASafariM.Api.Controllers
         {
             try
             {
-                var userId = User?.FindFirst("sub")?.Value ?? User?.FindFirst("id")?.Value;
+                var userId = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value 
+                    ?? User?.FindFirst("sub")?.Value 
+                    ?? User?.FindFirst("id")?.Value;
                 if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
                 {
                     return Unauthorized(ApiResponse<List<RepositoryDto>>.ErrorResult("Invalid token.", statusCode: 401));

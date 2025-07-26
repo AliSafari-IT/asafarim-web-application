@@ -26,3 +26,13 @@ export interface IUserPreferences {
     pushNotifications: boolean;
     projectVisibility: 'public' | 'private' | 'unlisted';
 }
+
+// DTO for updating user preferences (all fields optional)
+export interface IUpdateUserPreferences {
+    theme?: 'light' | 'dark' | 'auto';
+    language?: string;
+    timezone?: string;
+    emailNotifications?: boolean;
+    pushNotifications?: boolean;
+    projectVisibility?: 'public' | 'private' | 'unlisted';
+}
