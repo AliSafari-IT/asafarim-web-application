@@ -8,11 +8,13 @@ const Dashboard = () => {
   
   // Sample data for the dashboard
   const currentProjects = [
-    { id: 1, title: 'IGS-Pharma', state: 'In Progress', demoUrl: '/md-docs/projects/igs-pharma.md', techStack: 'React, Node.js' },
-    { id: 2, title: 'Active Projects', state: 'Active', demoUrl: 'http/md-docs/projects/active-projects.md', techStack: 'Angular, Express' },
-    { id: 3, title: 'Documentation Pages', state: 'Completed', demoUrl: '/md-docs/projects/documentation-pages.md', techStack: 'Vue.js, Flask' },
-    { id: 4, title: 'System Uptime', state: 'Pending', demoUrl: '/md-docs/projects/system-uptime.md', techStack: 'Ruby on Rails' }
-  ];
+    { id: 'igs-pharma-react-dotnet', title: 'IGS-Pharma (React + .NET)', state: 'In Progress', demoUrl: '/md-docs/CurrentProjects/igs-pharma/fullstack-react-dotnet-pharmacy.md', techStack: 'React, Node.js' },
+    { id: 'igs-pharma-wordpress', title: 'IGS-Pharma (WordPress)', state: 'Active', demoUrl: '/md-docs/CurrentProjects/igs-pharma/fullstack-wordpress.md', techStack: 'React, Node.js' },
+    { id: 'pharmacy-management-system', title: 'Pharmacy Management System', state: 'Active', demoUrl: '/md-docs/CurrentProjects/igs-pharma/pharmacy-management-system.md', techStack: 'Angular, Express' },
+    { id: 'asafarim-package-display-code', title: 'Display code', state: 'Active', demoUrl: '/md-docs/CurrentProjects/packages/display-code.md', techStack: 'React, Node.js' },
+    { id: 'asafarim-package-complete-md-viewer', title: 'Complete MD Viewer', state: 'Active', demoUrl: '/md-docs/CurrentProjects/packages/asafarim/complete-md-viewer.md', techStack: 'React, Node.js' },
+    { id: 'aqua-flow-interactive', title: 'Aqua Flow Interactive', state: 'In Progress', demoUrl: '/md-docs/CurrentProjects/AquaFlow/aqua-flow-web-based-hydrological-modeling.md', techStack: '.Net Core, React, TypeScript' }
+    ];
 
   return (
     <div className={`dashboard-container ${theme}`}>
