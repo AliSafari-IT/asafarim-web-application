@@ -7,6 +7,7 @@ import AddProject from "../AddProject/AddProject";
 import "./ProjectsDisplay.css";
 import { PaginatedProjectGrid } from "@asafarim/paginated-project-grid";
 import { useTheme } from '@asafarim/react-themes';
+import { useNavigate } from "react-router-dom";
 
 interface ProjectsDisplayProps {
   showUserProjectsOnly?: boolean;
@@ -39,6 +40,8 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
   const [showFeaturedOnly, setShowFeaturedOnly] = useState<boolean | undefined>(
     undefined
   );
+
+  const navigate = useNavigate();
 
   const loadProjects = async (page: number = 1) => {
     setIsLoading(true);
@@ -246,6 +249,7 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
       {error && <div className="error-message">{error}</div>}
 
       <PaginatedProjectGrid
+        key={"asafarim-projects-grid"}
         projects={
           projects?.map((p) => {
             // Map status to expected enum values
@@ -275,6 +279,7 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
               tags: p.tags || [],
               techStackId: p?.techStackId || undefined,
               thumbnailUrl: p.thumbnailUrl,
+              image: p.image || p.thumbnailUrl || "",
               createdAt: p.createdAt,
               updatedAt: p.updatedAt,
               userId: p.userId,
@@ -320,10 +325,11 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
         }
         cardsPerPage={6}
         currentTheme={currentTheme.mode}
-        enableSearch={true}
+        enableSearch={false}
         showTechStackIcons={true}
         onProjectClick={(project: any) => {
           console.log("Clicked project:", project.title);
+          navigate(`/projects/${project.id}`);
         }}
       />
 

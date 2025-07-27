@@ -67,12 +67,16 @@ namespace ASafariM.Api.Controllers
                 {
                     _logger.LogInformation("Filtering projects by userId: {UserId}", userGuid);
                     query = query.Where(p => p.UserId == userGuid);
-                    
+
                     // Debug: Check how many projects match this user
-                    var userProjectCount = await _context.Projects
-                        .Where(p => p.UserId == userGuid && p.IsActive && !p.IsDeleted)
+                    var userProjectCount = await _context
+                        .Projects.Where(p => p.UserId == userGuid && p.IsActive && !p.IsDeleted)
                         .CountAsync();
-                    _logger.LogInformation("Found {Count} projects for user {UserId}", userProjectCount, userGuid);
+                    _logger.LogInformation(
+                        "Found {Count} projects for user {UserId}",
+                        userProjectCount,
+                        userGuid
+                    );
                 }
 
                 query = query.Where(p => p.IsActive && !p.IsDeleted);
@@ -280,7 +284,7 @@ namespace ASafariM.Api.Controllers
                     UserId = userGuid,
                     TechStackId = createProjectDto.TechStackId,
                     CreatedBy = userGuid.ToString(),
-                    UpdatedBy = userGuid.ToString()
+                    UpdatedBy = userGuid.ToString(),
                 };
 
                 // Log project details for debugging

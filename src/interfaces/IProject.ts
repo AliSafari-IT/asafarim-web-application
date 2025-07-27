@@ -23,7 +23,6 @@ export interface IProject extends IBaseEntity {
 }
 
 export interface IProjectSummary {
-  [x: string]: undefined;
   id: string;
   title: string;
   description?: string;
@@ -32,12 +31,21 @@ export interface IProjectSummary {
   progress: number;
   tags: string[];
   thumbnailUrl?: string;
+  image?: string;
+  repositoryUrl?: string;
+  liveUrl?: string;
   isPublic: boolean;
   isFeatured: boolean;
+  isActive: boolean;
+  isDeleted: boolean;
   createdAt: string;
   updatedAt: string;
+  userId: string;
   userUsername: string;
+  techStackId?: string;
   techStackName?: string;
+  repositoriesCount?: number;
+  projectsCount?: number;
 }
 
 export interface ICreateProject {
