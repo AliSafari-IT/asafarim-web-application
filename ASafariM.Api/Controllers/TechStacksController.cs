@@ -25,6 +25,7 @@ namespace ASafariM.Api.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<ApiResponse<IEnumerable<TechStack>>>> GetTechStacks()
         {
             try

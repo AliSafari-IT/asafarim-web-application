@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ProjectService } from '../../services/ProjectService';
+import { TechStackService } from '../../services/TechStackService';
 import { ICreateProject, IProject } from '../../interfaces/IProject';
+import { ITechStack } from '../../interfaces/ITechStack';
 import './AddProject.css';
 
 interface FormErrors {
@@ -16,6 +18,7 @@ interface FormErrors {
   tags?: string;
   repositoryUrl?: string;
   liveUrl?: string;
+  techStackId?: string;
 }
 
 interface AddProjectProps {
@@ -50,6 +53,8 @@ const AddProject: React.FC<AddProjectProps> = ({ onProjectAdded, onCancel }) => 
     techStackId: ''
   });
   const [tagInput, setTagInput] = useState('');
+  const [techStacks, setTechStacks] = useState<ITechStack[]>([]);
+  const [isLoadingTechStacks, setIsLoadingTechStacks] = useState(false);
 
   // Load project data when in edit mode
   useEffect(() => {
@@ -94,6 +99,28 @@ const AddProject: React.FC<AddProjectProps> = ({ onProjectAdded, onCancel }) => 
       loadProject();
     }
   }, [isEditMode, id]);
+
+  // Load tech stacks on component mount
+  useEffect(() => {
+    const loadTechStacks = async () => {
+      try {
+        setIsLoadingTechStacks(true);
+        const response = await TechStackService.getTechStacks();
+        
+        if (response.success && response.data) {
+          setTechStacks(response.data);
+        } else {
+          console.error('Failed to load tech stacks:', response.message);
+        }
+      } catch (error) {
+        console.error('Error loading tech stacks:', error);
+      } finally {
+        setIsLoadingTechStacks(false);
+      }
+    };
+    
+    loadTechStacks();
+  }, []);
 
   const statusOptions = [
     'Planning',
@@ -522,17 +549,28 @@ const AddProject: React.FC<AddProjectProps> = ({ onProjectAdded, onCancel }) => 
           />
         </div>
 
-        {/* Tech Stack ID */}
+        {/* Tech Stack */}
         <div className="form-group">
-          <label htmlFor="techStackId">Tech Stack ID</label>
-          <input
-            type="text"
+          <label htmlFor="techStackId">Tech Stack</label>
+          <select
             id="techStackId"
             name="techStackId"
             value={formData.techStackId}
             onChange={handleInputChange}
-            placeholder="Enter tech stack identifier"
-          />
+            disabled={isLoadingTechStacks}
+          >
+            <option value="">
+              {isLoadingTechStacks ? 'Loading tech stacks...' : 'Select a tech stack'}
+            </option>
+            {techStacks.map((techStack) => (
+              <option key={techStack.id} value={techStack.id}>
+                {techStack.name} ({techStack.category})
+              </option>
+            ))}
+          </select>
+          {errors.techStackId && (
+            <span className="error-message">{errors.techStackId}</span>
+          )}
         </div>
 
         {/* Checkboxes */}
