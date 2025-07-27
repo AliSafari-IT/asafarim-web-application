@@ -1,11 +1,42 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { ProjectService } from '../../services/ProjectService';
+import { IProjectSummary } from '../../interfaces/IProject';
 
 const UserDropdown = () => {
   const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [userProjects, setUserProjects] = useState<IProjectSummary[]>([]);
+  const [projectsLoading, setProjectsLoading] = useState(false);
+  const [projectsLoaded, setProjectsLoaded] = useState(false);
+
+  // Load user projects when dropdown opens
+  const loadUserProjects = async () => {
+    if (projectsLoaded || projectsLoading || !user?.id) return;
+    
+    setProjectsLoading(true);
+    try {
+      const response = await ProjectService.getProjects(1, 5, undefined, undefined, undefined, undefined, user.id); // Load first 5 user projects
+      if (response.success && response.data && response.data.items) {
+        setUserProjects(response.data.items || []);
+      } else if (response.statusCode === 401) {
+        // Authentication error - don't show projects
+        console.warn('Authentication required for user projects');
+        setUserProjects([]);
+      } else {
+        console.error('Failed to load user projects:', response.message);
+        setUserProjects([]);
+      }
+    } catch (error) {
+      console.error('Error loading user projects:', error);
+      setUserProjects([]);
+    } finally {
+      setProjectsLoading(false);
+      setProjectsLoaded(true);
+    }
+  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -20,6 +51,13 @@ const UserDropdown = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  // Load projects when dropdown opens
+  useEffect(() => {
+    if (isOpen && user) {
+      loadUserProjects();
+    }
+  }, [isOpen, user]);
 
   const handleLogout = () => {
     logout();
@@ -111,16 +149,77 @@ const UserDropdown = () => {
               Dashboard
             </Link>
             
-            <Link 
-              to="/projects" 
-              className="dropdown-item"
-              onClick={() => setIsOpen(false)}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
-              </svg>
-              My Projects
-            </Link>
+            {/* User Projects Section */}
+            <div className="dropdown-section projects-section">
+              <div className="section-header">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                </svg>
+                <span>My Projects</span>
+                <Link 
+                  to="/projects" 
+                  className="view-all-link"
+                  onClick={() => setIsOpen(false)}
+                >
+                  View All
+                </Link>
+              </div>
+              
+              {projectsLoading ? (
+                <div className="projects-loading">
+                  <div className="loading-spinner"></div>
+                  <span>Loading projects...</span>
+                </div>
+              ) : userProjects && userProjects.length > 0 ? (
+                <div className="projects-list">
+                  {userProjects?.map((project) => (
+                    <Link
+                      key={project.id}
+                      to={`/projects/${project.id}`}
+                      className="project-item"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <div className="project-info">
+                        <div className="project-title">{project.title}</div>
+                        <div className="project-meta">
+                          <span className={`status-badge ${project.status.toLowerCase().replace(' ', '-')}`}>
+                            {project.status}
+                          </span>
+                          <span className="project-progress">{project.progress}%</span>
+                        </div>
+                      </div>
+                      {project.thumbnailUrl && (
+                        <div className="project-thumbnail">
+                          <img src={project.thumbnailUrl} alt={project.title} />
+                        </div>
+                      )}
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="no-projects">
+                  <div className="no-projects-message">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
+                    </svg>
+                    <span>No projects yet</span>
+                  </div>
+                  {user ? (
+                    <Link 
+                      to="/projects/new" 
+                      className="create-project-link"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      Create your first project
+                    </Link>
+                  ) : (
+                    <div className="auth-required-message">
+                      <span>Please log in to view your projects</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
             
             <Link 
               to="/settings" 

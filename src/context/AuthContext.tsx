@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { IUserPreferences, IUpdateUserPreferences } from '../interfaces/IUser';
-import { ThemeContext } from './ThemeContext';
+import { useTheme } from '@asafarim/react-themes';
 
 // Types based on your API DTOs
 export interface User {
@@ -79,19 +79,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
   const [preferences, setPreferences] = useState<IUserPreferences | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Access theme context to apply theme preferences
-  const themeContext = useContext(ThemeContext);
+  const { setMode } = useTheme();
 
   const isAuthenticated = !!user && !!token;
+  
+  // Debug authentication state
+  console.log('AuthContext Debug:', {
+    user: user ? 'exists' : 'null',
+    token: token ? 'exists' : 'null', 
+    isAuthenticated
+  });
 
   // Function to apply user preferences to the current state
   const applyUserPreferences = (userPreferences: IUserPreferences) => {
     try {
       // Apply theme preference
       if (userPreferences.theme && userPreferences.theme !== 'auto') {
-        if (themeContext?.setTheme) {
-          themeContext.setTheme(userPreferences.theme);
+        if (setMode) {
+          setMode(userPreferences.theme);
           console.log(`Applied theme preference: ${userPreferences.theme}`);
         }
       }
