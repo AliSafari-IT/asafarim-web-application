@@ -168,6 +168,101 @@ namespace ASafariM.Api.Controllers
             }
         }
 
+        [HttpGet("admin/all")]
+        [Authorize(Roles = "Admin")]
+        public async Task<
+            ActionResult<PaginatedResponse<ProjectSummaryDto>>
+        > GetAllProjectsForAdmin(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] string? search = null,
+            [FromQuery] string? status = null
+        )
+        {
+            try
+            {
+                _logger.LogInformation(
+                    "Admin requesting all projects - User: {User}, Role: {Role}",
+                    User.Identity?.Name,
+                    User.FindFirst("role")?.Value
+                );
+
+                var query = _context
+                    .Projects.Include(p => p.User)
+                    .Include(p => p.TechStack)
+                    .Where(p => p.IsActive && !p.IsDeleted) // Only active, non-deleted projects
+                    .AsQueryable();
+
+                // Apply search filter
+                if (!string.IsNullOrEmpty(search))
+                {
+                    query = query.Where(p =>
+                        p.Title.Contains(search)
+                        || (p.Description != null && p.Description.Contains(search))
+                        || p.User.Username.Contains(search)
+                    );
+                }
+
+                // Apply status filter
+                if (!string.IsNullOrEmpty(status))
+                {
+                    query = query.Where(p => p.Status == status);
+                }
+
+                var totalCount = await query.CountAsync();
+                var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+                _logger.LogInformation("Admin query found {TotalCount} projects", totalCount);
+
+                var projects = await query
+                    .OrderByDescending(p => p.CreatedAt)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(p => new ProjectSummaryDto
+                    {
+                        Id = p.Id,
+                        Title = p.Title,
+                        Description = p.Description,
+                        Status = p.Status,
+                        Priority = p.Priority,
+                        Progress = p.Progress,
+                        Tags = p.Tags,
+                        ThumbnailUrl = p.ThumbnailUrl,
+                        IsPublic = p.IsPublic,
+                        IsFeatured = p.IsFeatured,
+                        CreatedAt = p.CreatedAt,
+                        UpdatedAt = p.UpdatedAt,
+                        UserUsername = p.User.Username,
+                        TechStackName = p.TechStack != null ? p.TechStack.Name : null,
+                    })
+                    .ToListAsync();
+
+                _logger.LogInformation("Returning {Count} projects for admin", projects.Count);
+
+                var response = PaginatedResponse<ProjectSummaryDto>.SuccessResult(
+                    projects,
+                    page,
+                    totalPages,
+                    totalCount,
+                    pageSize,
+                    $"Admin: Retrieved {projects.Count} of {totalCount} projects successfully."
+                );
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while retrieving projects for admin");
+                return StatusCode(
+                    500,
+                    ApiResponse<List<ProjectSummaryDto>>.ErrorResult(
+                        "An error occurred while retrieving projects for admin.",
+                        statusCode: 500
+                    )
+                );
+            }
+        }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<ApiResponse<ProjectDto>>> GetProject(Guid id)
         {
@@ -556,7 +651,7 @@ namespace ASafariM.Api.Controllers
 
                 await _context.SaveChangesAsync();
 
-                return Ok(ApiResponse<object>.SuccessResult(null, "Project deleted successfully."));
+                return Ok(ApiResponse<object>.SuccessResult(new { }, "Project deleted successfully."));
             }
             catch (Exception ex)
             {

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ProjectService } from '../../services/ProjectService';
-import { ICreateProject } from '../../interfaces/IProject';
+import { ICreateProject, IProject } from '../../interfaces/IProject';
 import './AddProject.css';
 
 interface FormErrors {
@@ -25,7 +25,11 @@ interface AddProjectProps {
 
 const AddProject: React.FC<AddProjectProps> = ({ onProjectAdded, onCancel }) => {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const isEditMode = Boolean(id);
+  
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingProject, setIsLoadingProject] = useState(isEditMode);
   const [errors, setErrors] = useState<FormErrors>({});
   const [apiError, setApiError] = useState<string | null>(null);
   const [formData, setFormData] = useState<ICreateProject>({
@@ -46,6 +50,50 @@ const AddProject: React.FC<AddProjectProps> = ({ onProjectAdded, onCancel }) => 
     techStackId: ''
   });
   const [tagInput, setTagInput] = useState('');
+
+  // Load project data when in edit mode
+  useEffect(() => {
+    if (isEditMode && id) {
+      const loadProject = async () => {
+        try {
+          setIsLoadingProject(true);
+          setApiError(null);
+          
+          const response = await ProjectService.getProject(id);
+          
+          if (response.success && response.data) {
+            const project = response.data;
+            setFormData({
+              title: project.title,
+              description: project.description || '',
+              status: project.status,
+              priority: project.priority,
+              startDate: project.startDate ? new Date(project.startDate).toISOString().split('T')[0] : '',
+              endDate: project.endDate ? new Date(project.endDate).toISOString().split('T')[0] : '',
+              dueDate: project.dueDate ? new Date(project.dueDate).toISOString().split('T')[0] : '',
+              budget: project.budget,
+              tags: project.tags || [],
+              thumbnailUrl: project.thumbnailUrl || '',
+              repositoryUrl: project.repositoryUrl || '',
+              liveUrl: project.liveUrl || '',
+              isPublic: project.isPublic,
+              isFeatured: project.isFeatured,
+              techStackId: project.techStackId || ''
+            });
+          } else {
+            setApiError(response.message || 'Failed to load project');
+          }
+        } catch (error) {
+          console.error('Error loading project:', error);
+          setApiError('Failed to load project data');
+        } finally {
+          setIsLoadingProject(false);
+        }
+      };
+      
+      loadProject();
+    }
+  }, [isEditMode, id]);
 
   const statusOptions = [
     'Planning',
@@ -204,18 +252,26 @@ const AddProject: React.FC<AddProjectProps> = ({ onProjectAdded, onCancel }) => 
     console.log('Sending project data:', cleanedFormData);
     
     try {
-      const response = await ProjectService.createProject(cleanedFormData);
+      let response;
+      
+      if (isEditMode && id) {
+        // Update existing project
+        response = await ProjectService.updateProject(id, cleanedFormData);
+      } else {
+        // Create new project
+        response = await ProjectService.createProject(cleanedFormData);
+      }
       
       if (response.success && response.data) {
         // Call callback if provided, otherwise navigate
         if (onProjectAdded) {
           onProjectAdded();
         } else {
-          navigate(`/projects/${response.data.id}`);
+          navigate(`/projects/${response.data.id || id}`);
         }
       } else {
         // Handle API error
-        let errorMessage = response.message || 'Failed to create project. Please check your input and try again.';
+        let errorMessage = response.message || `Failed to ${isEditMode ? 'update' : 'create'} project. Please check your input and try again.`;
         
         // Special handling for authentication errors
         if (response.statusCode === 401) {
@@ -223,12 +279,12 @@ const AddProject: React.FC<AddProjectProps> = ({ onProjectAdded, onCancel }) => 
         }
         
         setApiError(errorMessage);
-        console.error('Failed to create project:', errorMessage);
+        console.error(`Failed to ${isEditMode ? 'update' : 'create'} project:`, errorMessage);
       }
     } catch (error) {
-      const errorMessage = 'Network error occurred while creating project. Please try again.';
+      const errorMessage = `Network error occurred while ${isEditMode ? 'updating' : 'creating'} project. Please try again.`;
       setApiError(errorMessage);
-      console.error('Error creating project:', error);
+      console.error(`Error ${isEditMode ? 'updating' : 'creating'} project:`, error);
     } finally {
       setIsLoading(false);
     }
@@ -245,7 +301,7 @@ const AddProject: React.FC<AddProjectProps> = ({ onProjectAdded, onCancel }) => 
   return (
     <div className="add-project-container">
       <div className="add-project-header">
-        <h2>Add New Project</h2>
+        <h2>{isEditMode ? 'Edit Project' : 'Add New Project'}</h2>
         <button 
           type="button" 
           className="btn btn-secondary"
@@ -262,7 +318,13 @@ const AddProject: React.FC<AddProjectProps> = ({ onProjectAdded, onCancel }) => 
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="add-project-form">
+      {isLoadingProject ? (
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Loading project data...</p>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="add-project-form">
         {/* Title */}
         <div className="form-group">
           <label htmlFor="title">Project Title *</label>
@@ -517,10 +579,11 @@ const AddProject: React.FC<AddProjectProps> = ({ onProjectAdded, onCancel }) => 
             className="btn btn-primary"
             disabled={isLoading}
           >
-            {isLoading ? 'Creating...' : 'Create Project'}
+            {isLoading ? (isEditMode ? 'Updating...' : 'Creating...') : (isEditMode ? 'Update Project' : 'Create Project')}
           </button>
         </div>
       </form>
+      )}
     </div>
   );
 };

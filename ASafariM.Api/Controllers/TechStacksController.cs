@@ -116,8 +116,10 @@ namespace ASafariM.Api.Controllers
                             Message = "Invalid tech stack data",
                             Errors = ModelState.ToDictionary(
                                 kvp => kvp.Key,
-                                kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray() ?? Array.Empty<string>()
-                            )
+                                kvp =>
+                                    kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray()
+                                    ?? Array.Empty<string>()
+                            ),
                         }
                     );
                 }
@@ -198,8 +200,10 @@ namespace ASafariM.Api.Controllers
                             Message = "Invalid tech stack data",
                             Errors = ModelState.ToDictionary(
                                 kvp => kvp.Key,
-                                kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray() ?? Array.Empty<string>()
-                            )
+                                kvp =>
+                                    kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray()
+                                    ?? Array.Empty<string>()
+                            ),
                         }
                     );
                 }

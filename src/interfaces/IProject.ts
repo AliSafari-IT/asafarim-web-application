@@ -94,3 +94,16 @@ export interface IPaginatedProjectsResponse {
   hasPreviousPage: boolean;
   hasNextPage: boolean;
 }
+
+// For admin API responses that return projects directly in data array
+export interface IAdminProjectsResponse {
+  data: IProjectSummary[];
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalCount: number;
+    pageSize: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
+}

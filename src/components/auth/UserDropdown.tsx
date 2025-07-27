@@ -149,6 +149,65 @@ const UserDropdown = () => {
               Dashboard
             </Link>
             
+            {/* Admin Area - Only show for admin users */}
+            {user.role === 'Admin' && (
+              <>
+                <div className="dropdown-divider"></div>
+                <div className="dropdown-section admin-section">
+                  <div className="section-header admin-header">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M12,7C13.33,7 14.35,8.12 14.35,9.5C14.35,10.88 13.33,12 12,12C10.67,12 9.65,10.88 9.65,9.5C9.65,8.12 10.67,7 12,7M18,14.25C18,16.18 15.58,17.75 12,17.75C8.42,17.75 6,16.18 6,14.25V13.5C6,13.5 8.21,14.75 12,14.75C15.79,14.75 18,13.5 18,13.5V14.25Z"/>
+                    </svg>
+                    <span>Admin Area</span>
+                  </div>
+                  
+                  <Link 
+                    to="/admin/projects" 
+                    className="dropdown-item admin-item"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                    </svg>
+                    Manage All Projects
+                  </Link>
+                  
+                  <Link 
+                    to="/admin/users" 
+                    className="dropdown-item admin-item"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M16,4C16,2.89 16.89,2 18,2A2,2 0 0,1 20,4A2,2 0 0,1 18,6C16.89,6 16,5.11 16,4M20.78,7.58L19.64,6.44L18.22,7.86L19.36,9L20.78,7.58M9,12C11.21,12 13,10.21 13,8C13,5.79 11.21,4 9,4C6.79,4 5,5.79 5,8C5,10.21 6.79,12 9,12M9,14C6.33,14 1,15.34 1,18V20H17V18C17,15.34 11.67,14 9,14Z"/>
+                    </svg>
+                    Manage Users
+                  </Link>
+                  
+                  <Link 
+                    to="/admin/tech-stacks" 
+                    className="dropdown-item admin-item"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12,2A2,2 0 0,1 14,4C14,4.74 13.6,5.39 13,5.73V7H14A7,7 0 0,1 21,14H22A1,1 0 0,1 23,15V18A1,1 0 0,1 22,19H21V20A2,2 0 0,1 19,22H5A2,2 0 0,1 3,20V19H2A1,1 0 0,1 1,18V15A1,1 0 0,1 2,14H3A7,7 0 0,1 10,7H11V5.73C10.4,5.39 10,4.74 10,4A2,2 0 0,1 12,2M7.5,13A2.5,2.5 0 0,0 5,15.5A2.5,2.5 0 0,0 7.5,18A2.5,2.5 0 0,0 10,15.5A2.5,2.5 0 0,0 7.5,13M16.5,13A2.5,2.5 0 0,0 14,15.5A2.5,2.5 0 0,0 16.5,18A2.5,2.5 0 0,0 19,15.5A2.5,2.5 0 0,0 16.5,13Z"/>
+                    </svg>
+                    Manage Tech Stacks
+                  </Link>
+                  
+                  <Link 
+                    to="/admin/analytics" 
+                    className="dropdown-item admin-item"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M22,21H2V3H4V19H6V17H10V19H12V16H16V19H18V17H22V21M16,8H18V15H16V8M12,2H14V15H12V2M8,9H10V15H8V9M4,11H6V15H4V11Z"/>
+                    </svg>
+                    Analytics & Reports
+                  </Link>
+                </div>
+              </>
+            )}
+            
             {/* User Projects Section */}
             <div className="dropdown-section projects-section">
               <div className="section-header">

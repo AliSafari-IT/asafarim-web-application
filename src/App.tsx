@@ -23,6 +23,7 @@ import "./styles/settings.css";
 import ProjectsDisplay from "./components/ProjectsDisplay/ProjectsDisplay";
 import AddProject from "./components/AddProject/AddProject";
 import ProjectDetails from "./components/ProjectDetails/ProjectDetails";
+import AdminProjects from "./pages/admin/AdminProjects";
 
 // Component to conditionally render content based on the current route
 const AppContent = () => {
@@ -124,6 +125,7 @@ const AppContent = () => {
       <Route path="/projects/new" element={<AddProject />} />
       <Route path="/projects/:id" element={<ProjectDetails />} />
       <Route path="/projects/:id/edit" element={<AddProject />} />
+      <Route path="/admin/projects" element={<AdminProjects />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

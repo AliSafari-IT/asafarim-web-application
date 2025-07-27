@@ -866,8 +866,7 @@
 
 .create-project-link:hover {
   background-color: var(--primary-color-dark);
-  text-decoration: none;
-  color: white;
+  transform: translateY(-1px);
 }
 
 .auth-required-message {
@@ -934,4 +933,83 @@
     width: 24px;
     height: 24px;
   }
+}
+
+/* Admin Section Styles */
+.admin-section {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px;
+  margin: 8px 0;
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.admin-header {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  font-weight: 600;
+}
+
+.admin-header svg {
+  color: #ffd700;
+  margin-right: 8px;
+}
+
+.admin-item {
+  color: white !important;
+  background: transparent;
+  border: none;
+  padding: 12px 16px;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-item:last-child {
+  border-bottom: none;
+}
+
+.admin-item:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  transform: translateX(4px);
+}
+
+.admin-item svg {
+  color: #ffd700;
+  margin-right: 12px;
+  transition: transform 0.2s ease;
+}
+
+.admin-item:hover svg {
+  transform: scale(1.1);
+}
+
+/* Admin badge for visual distinction */
+.admin-section::before {
+  content: "ADMIN";
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #ffd700;
+  color: #333;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+/* Dark theme adjustments for admin section */
+[data-theme="dark"] .admin-section {
+  background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+}
+
+[data-theme="dark"] .admin-header {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .admin-item:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
 }
