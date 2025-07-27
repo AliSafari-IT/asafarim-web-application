@@ -1,12 +1,11 @@
 import { Link } from 'react-router-dom';
-import { useContext } from 'react';
-import { ThemeContext } from '../../context/ThemeContext';
+import { useTheme } from '@asafarim/react-themes';
 
 const Home = () => {
-  const { theme } = useContext(ThemeContext);
+  const { mode } = useTheme();
   
   return (
-    <div className={`home-container ${theme}`}>
+    <div className={`home-container ${mode}`}>
       <section className="hero">
         <h1>ASafariM Web Application</h1>
         <p className="hero-subtitle">Developer Portfolio & Scientific Computing Platform</p>

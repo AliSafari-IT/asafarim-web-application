@@ -1,13 +1,14 @@
 import { Link } from 'react-router-dom';
-import { useContext, useState, useEffect } from 'react';
-import { ThemeContext } from '../../context/ThemeContext';
+import { useState, useEffect } from 'react';
+import { useTheme } from '@asafarim/react-themes';
 import { useAuth } from '../../context/AuthContext';
 import LoginModal from '../auth/LoginModal';
 import RegisterModal from '../auth/RegisterModal';
 import UserDropdown from '../auth/UserDropdown';
+import { ThemeToggle } from '@asafarim/react-themes';
 
 const Navbar = () => {
-  const { theme, toggleTheme } = useContext(ThemeContext);
+  const { currentTheme } = useTheme();
   const { isAuthenticated, isLoading } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -64,7 +65,7 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className={`navbar ${theme}`}>
+      <nav className={`navbar ${currentTheme}`}>
         <div className="navbar-brand">
           <Link to="/" className="navbar-logo">
             <img src="/logoT.svg" width={30} alt="Logo" className="logo-image" />
@@ -94,14 +95,10 @@ const Navbar = () => {
           <Link to="/md-docs" className="navbar-item" onClick={handleNavLinkClick}>Documentation</Link>
           
           <div className="navbar-actions">
-            <button 
-              onClick={toggleTheme} 
-              className="theme-toggle-btn"
-              aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-            >
-              {theme === 'light' ? '🌙' : '☀️'}
-            </button>
-            
+            <ThemeToggle className='theme-toggle-btn'
+            aria-label={`Switch to ${currentTheme.mode === 'light' ? 'dark' : 'light'} mode`}
+            />
+                       
             {!isLoading && (
               <div className="auth-section">
                 {isAuthenticated ? (

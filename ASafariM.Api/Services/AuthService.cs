@@ -241,6 +241,11 @@ namespace ASafariM.Api.Services
             {
                 Subject = new ClaimsIdentity(new[]
                 {
+                    new Claim("sub", user.Id.ToString()),
+                    new Claim("id", user.Id.ToString()),
+                    new Claim("name", user.Username),
+                    new Claim("email", user.Email),
+                    new Claim("role", user.Role),
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                     new Claim(ClaimTypes.Name, user.Username),
                     new Claim(ClaimTypes.Email, user.Email),

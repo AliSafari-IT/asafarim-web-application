@@ -1,9 +1,9 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using ASafariM.Api.Data;
 using ASafariM.Api.DTOs;
 using ASafariM.Api.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ASafariM.Api.Controllers
 {
@@ -28,20 +28,24 @@ namespace ASafariM.Api.Controllers
             [FromQuery] string? search = null,
             [FromQuery] string? status = null,
             [FromQuery] bool? isPublic = null,
-            [FromQuery] bool? isFeatured = null)
+            [FromQuery] bool? isFeatured = null,
+            [FromQuery] string? userId = null
+        )
         {
             try
             {
-                var query = _context.Projects
-                    .Include(p => p.User)
+                var query = _context
+                    .Projects.Include(p => p.User)
                     .Include(p => p.TechStack)
                     .AsQueryable();
 
                 // Apply filters
                 if (!string.IsNullOrEmpty(search))
                 {
-                    query = query.Where(p => p.Title.Contains(search) || 
-                                           (p.Description != null && p.Description.Contains(search)));
+                    query = query.Where(p =>
+                        p.Title.Contains(search)
+                        || (p.Description != null && p.Description.Contains(search))
+                    );
                 }
 
                 if (!string.IsNullOrEmpty(status))
@@ -59,7 +63,60 @@ namespace ASafariM.Api.Controllers
                     query = query.Where(p => p.IsFeatured == isFeatured.Value);
                 }
 
+                if (!string.IsNullOrEmpty(userId) && Guid.TryParse(userId, out var userGuid))
+                {
+                    _logger.LogInformation("Filtering projects by userId: {UserId}", userGuid);
+                    query = query.Where(p => p.UserId == userGuid);
+
+                    // Debug: Check how many projects match this user
+                    var userProjectCount = await _context
+                        .Projects.Where(p => p.UserId == userGuid && p.IsActive && !p.IsDeleted)
+                        .CountAsync();
+                    _logger.LogInformation(
+                        "Found {Count} projects for user {UserId}",
+                        userProjectCount,
+                        userGuid
+                    );
+                }
+
                 query = query.Where(p => p.IsActive && !p.IsDeleted);
+
+                // Debug logging
+                var allProjects = await _context
+                    .Projects.Select(p => new
+                    {
+                        p.Id,
+                        p.Title,
+                        p.IsActive,
+                        p.IsDeleted,
+                        p.IsPublic,
+                    })
+                    .ToListAsync();
+                _logger.LogInformation(
+                    "Debug - All projects in database: {Projects}",
+                    string.Join(
+                        ", ",
+                        allProjects.Select(p =>
+                            $"{p.Title}(Active:{p.IsActive},Deleted:{p.IsDeleted},Public:{p.IsPublic})"
+                        )
+                    )
+                );
+
+                var filteredProjects = await query
+                    .Select(p => new
+                    {
+                        p.Id,
+                        p.Title,
+                        p.IsPublic,
+                    })
+                    .ToListAsync();
+                _logger.LogInformation(
+                    "Debug - Filtered projects: {Projects}",
+                    string.Join(
+                        ", ",
+                        filteredProjects.Select(p => $"{p.Title}(Public:{p.IsPublic})")
+                    )
+                );
 
                 var totalCount = await query.CountAsync();
                 var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
@@ -83,20 +140,126 @@ namespace ASafariM.Api.Controllers
                         CreatedAt = p.CreatedAt,
                         UpdatedAt = p.UpdatedAt,
                         UserUsername = p.User.Username,
-                        TechStackName = p.TechStack != null ? p.TechStack.Name : null
+                        TechStackName = p.TechStack != null ? p.TechStack.Name : null,
                     })
                     .ToListAsync();
 
                 var response = PaginatedResponse<ProjectSummaryDto>.SuccessResult(
-                    projects, page, totalPages, totalCount, pageSize, "Projects retrieved successfully.");
+                    projects,
+                    page,
+                    totalPages,
+                    totalCount,
+                    pageSize,
+                    "Projects retrieved successfully."
+                );
 
                 return Ok(response);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while retrieving projects");
-                return StatusCode(500, ApiResponse<List<ProjectSummaryDto>>.ErrorResult(
-                    "An error occurred while retrieving projects.", statusCode: 500));
+                return StatusCode(
+                    500,
+                    ApiResponse<List<ProjectSummaryDto>>.ErrorResult(
+                        "An error occurred while retrieving projects.",
+                        statusCode: 500
+                    )
+                );
+            }
+        }
+
+        [HttpGet("admin/all")]
+        [Authorize(Roles = "Admin")]
+        public async Task<
+            ActionResult<PaginatedResponse<ProjectSummaryDto>>
+        > GetAllProjectsForAdmin(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] string? search = null,
+            [FromQuery] string? status = null
+        )
+        {
+            try
+            {
+                _logger.LogInformation(
+                    "Admin requesting all projects - User: {User}, Role: {Role}",
+                    User.Identity?.Name,
+                    User.FindFirst("role")?.Value
+                );
+
+                var query = _context
+                    .Projects.Include(p => p.User)
+                    .Include(p => p.TechStack)
+                    .Where(p => p.IsActive && !p.IsDeleted) // Only active, non-deleted projects
+                    .AsQueryable();
+
+                // Apply search filter
+                if (!string.IsNullOrEmpty(search))
+                {
+                    query = query.Where(p =>
+                        p.Title.Contains(search)
+                        || (p.Description != null && p.Description.Contains(search))
+                        || p.User.Username.Contains(search)
+                    );
+                }
+
+                // Apply status filter
+                if (!string.IsNullOrEmpty(status))
+                {
+                    query = query.Where(p => p.Status == status);
+                }
+
+                var totalCount = await query.CountAsync();
+                var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+                _logger.LogInformation("Admin query found {TotalCount} projects", totalCount);
+
+                var projects = await query
+                    .OrderByDescending(p => p.CreatedAt)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(p => new ProjectSummaryDto
+                    {
+                        Id = p.Id,
+                        Title = p.Title,
+                        Description = p.Description,
+                        Status = p.Status,
+                        Priority = p.Priority,
+                        Progress = p.Progress,
+                        Tags = p.Tags,
+                        ThumbnailUrl = p.ThumbnailUrl,
+                        IsPublic = p.IsPublic,
+                        IsFeatured = p.IsFeatured,
+                        CreatedAt = p.CreatedAt,
+                        UpdatedAt = p.UpdatedAt,
+                        UserUsername = p.User.Username,
+                        TechStackName = p.TechStack != null ? p.TechStack.Name : null,
+                    })
+                    .ToListAsync();
+
+                _logger.LogInformation("Returning {Count} projects for admin", projects.Count);
+
+                var response = PaginatedResponse<ProjectSummaryDto>.SuccessResult(
+                    projects,
+                    page,
+                    totalPages,
+                    totalCount,
+                    pageSize,
+                    $"Admin: Retrieved {projects.Count} of {totalCount} projects successfully."
+                );
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while retrieving projects for admin");
+                return StatusCode(
+                    500,
+                    ApiResponse<List<ProjectSummaryDto>>.ErrorResult(
+                        "An error occurred while retrieving projects for admin.",
+                        statusCode: 500
+                    )
+                );
             }
         }
 
@@ -105,15 +268,17 @@ namespace ASafariM.Api.Controllers
         {
             try
             {
-                var project = await _context.Projects
-                    .Include(p => p.User)
+                var project = await _context
+                    .Projects.Include(p => p.User)
                     .Include(p => p.TechStack)
                     .Include(p => p.Repositories)
                     .FirstOrDefaultAsync(p => p.Id == id && p.IsActive && !p.IsDeleted);
 
                 if (project == null)
                 {
-                    return NotFound(ApiResponse<ProjectDto>.ErrorResult("Project not found.", statusCode: 404));
+                    return NotFound(
+                        ApiResponse<ProjectDto>.ErrorResult("Project not found.", statusCode: 404)
+                    );
                 }
 
                 var projectDto = new ProjectDto
@@ -141,21 +306,33 @@ namespace ASafariM.Api.Controllers
                     UserUsername = project.User.Username,
                     TechStackId = project.TechStackId,
                     TechStackName = project.TechStack?.Name,
-                    RepositoriesCount = project.Repositories.Count
+                    RepositoriesCount = project.Repositories.Count,
                 };
 
-                return Ok(ApiResponse<ProjectDto>.SuccessResult(projectDto, "Project retrieved successfully."));
+                return Ok(
+                    ApiResponse<ProjectDto>.SuccessResult(
+                        projectDto,
+                        "Project retrieved successfully."
+                    )
+                );
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while retrieving project {ProjectId}", id);
-                return StatusCode(500, ApiResponse<ProjectDto>.ErrorResult(
-                    "An error occurred while retrieving the project.", statusCode: 500));
+                return StatusCode(
+                    500,
+                    ApiResponse<ProjectDto>.ErrorResult(
+                        "An error occurred while retrieving the project.",
+                        statusCode: 500
+                    )
+                );
             }
         }
 
         [HttpPost]
-        public async Task<ActionResult<ApiResponse<ProjectDto>>> CreateProject([FromBody] CreateProjectDto createProjectDto)
+        public async Task<ActionResult<ApiResponse<ProjectDto>>> CreateProject(
+            [FromBody] CreateProjectDto createProjectDto
+        )
         {
             if (!ModelState.IsValid)
             {
@@ -163,10 +340,14 @@ namespace ASafariM.Api.Controllers
                     .Where(x => x.Value?.Errors.Count > 0)
                     .ToDictionary(
                         kvp => kvp.Key,
-                        kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray() ?? Array.Empty<string>()
+                        kvp =>
+                            kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray()
+                            ?? Array.Empty<string>()
                     );
 
-                return BadRequest(ApiResponse<ProjectDto>.ErrorResult("Validation failed.", errors, 400));
+                return BadRequest(
+                    ApiResponse<ProjectDto>.ErrorResult("Validation failed.", errors, 400)
+                );
             }
 
             try
@@ -174,7 +355,9 @@ namespace ASafariM.Api.Controllers
                 var userId = User?.FindFirst("sub")?.Value ?? User?.FindFirst("id")?.Value;
                 if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
                 {
-                    return Unauthorized(ApiResponse<ProjectDto>.ErrorResult("Invalid token.", statusCode: 401));
+                    return Unauthorized(
+                        ApiResponse<ProjectDto>.ErrorResult("Invalid token.", statusCode: 401)
+                    );
                 }
 
                 var project = new Project
@@ -183,9 +366,9 @@ namespace ASafariM.Api.Controllers
                     Description = createProjectDto.Description,
                     Status = createProjectDto.Status,
                     Priority = createProjectDto.Priority,
-                    StartDate = createProjectDto.StartDate,
-                    EndDate = createProjectDto.EndDate,
-                    DueDate = createProjectDto.DueDate,
+                    StartDate = createProjectDto.StartDate?.ToUniversalTime(),
+                    EndDate = createProjectDto.EndDate?.ToUniversalTime(),
+                    DueDate = createProjectDto.DueDate?.ToUniversalTime(),
                     Budget = createProjectDto.Budget,
                     Tags = createProjectDto.Tags,
                     ThumbnailUrl = createProjectDto.ThumbnailUrl,
@@ -194,22 +377,28 @@ namespace ASafariM.Api.Controllers
                     IsPublic = createProjectDto.IsPublic,
                     IsFeatured = createProjectDto.IsFeatured,
                     UserId = userGuid,
-                    TechStackId = createProjectDto.TechStackId
+                    TechStackId = createProjectDto.TechStackId,
+                    CreatedBy = userGuid.ToString(),
+                    UpdatedBy = userGuid.ToString(),
                 };
+
+                // Log project details for debugging
+                _logger.LogInformation(
+                    "Creating project with UserId: {UserId}, Title: {Title}, TechStackId: {TechStackId}",
+                    userGuid,
+                    createProjectDto.Title,
+                    createProjectDto.TechStackId
+                );
 
                 _context.Projects.Add(project);
                 await _context.SaveChangesAsync();
 
                 // Load related data for response
-                await _context.Entry(project)
-                    .Reference(p => p.User)
-                    .LoadAsync();
+                await _context.Entry(project).Reference(p => p.User).LoadAsync();
 
                 if (project.TechStackId.HasValue)
                 {
-                    await _context.Entry(project)
-                        .Reference(p => p.TechStack)
-                        .LoadAsync();
+                    await _context.Entry(project).Reference(p => p.TechStack).LoadAsync();
                 }
 
                 var projectDto = new ProjectDto
@@ -237,22 +426,46 @@ namespace ASafariM.Api.Controllers
                     UserUsername = project.User.Username,
                     TechStackId = project.TechStackId,
                     TechStackName = project.TechStack?.Name,
-                    RepositoriesCount = 0
+                    RepositoriesCount = 0,
                 };
 
-                return Created($"api/projects/{project.Id}", 
-                    ApiResponse<ProjectDto>.SuccessResult(projectDto, "Project created successfully.", 201));
+                return Created(
+                    $"api/projects/{project.Id}",
+                    ApiResponse<ProjectDto>.SuccessResult(
+                        projectDto,
+                        "Project created successfully.",
+                        201
+                    )
+                );
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while creating project");
-                return StatusCode(500, ApiResponse<ProjectDto>.ErrorResult(
-                    "An error occurred while creating the project.", statusCode: 500));
+                _logger.LogError(
+                    ex,
+                    "Error occurred while creating project. Details: {ErrorMessage}. StackTrace: {StackTrace}",
+                    ex.Message,
+                    ex.StackTrace
+                );
+
+                // Return more detailed error for debugging
+                var errorMessage = $"An error occurred while creating the project: {ex.Message}";
+                if (ex.InnerException != null)
+                {
+                    errorMessage += $" Inner exception: {ex.InnerException.Message}";
+                }
+
+                return StatusCode(
+                    500,
+                    ApiResponse<ProjectDto>.ErrorResult(errorMessage, statusCode: 500)
+                );
             }
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<ProjectDto>>> UpdateProject(Guid id, [FromBody] UpdateProjectDto updateProjectDto)
+        public async Task<ActionResult<ApiResponse<ProjectDto>>> UpdateProject(
+            Guid id,
+            [FromBody] UpdateProjectDto updateProjectDto
+        )
         {
             if (!ModelState.IsValid)
             {
@@ -260,10 +473,14 @@ namespace ASafariM.Api.Controllers
                     .Where(x => x.Value?.Errors.Count > 0)
                     .ToDictionary(
                         kvp => kvp.Key,
-                        kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray() ?? Array.Empty<string>()
+                        kvp =>
+                            kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray()
+                            ?? Array.Empty<string>()
                     );
 
-                return BadRequest(ApiResponse<ProjectDto>.ErrorResult("Validation failed.", errors, 400));
+                return BadRequest(
+                    ApiResponse<ProjectDto>.ErrorResult("Validation failed.", errors, 400)
+                );
             }
 
             try
@@ -271,17 +488,21 @@ namespace ASafariM.Api.Controllers
                 var userId = User?.FindFirst("sub")?.Value ?? User?.FindFirst("id")?.Value;
                 if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
                 {
-                    return Unauthorized(ApiResponse<ProjectDto>.ErrorResult("Invalid token.", statusCode: 401));
+                    return Unauthorized(
+                        ApiResponse<ProjectDto>.ErrorResult("Invalid token.", statusCode: 401)
+                    );
                 }
 
-                var project = await _context.Projects
-                    .Include(p => p.User)
+                var project = await _context
+                    .Projects.Include(p => p.User)
                     .Include(p => p.TechStack)
                     .FirstOrDefaultAsync(p => p.Id == id && p.IsActive && !p.IsDeleted);
 
                 if (project == null)
                 {
-                    return NotFound(ApiResponse<ProjectDto>.ErrorResult("Project not found.", statusCode: 404));
+                    return NotFound(
+                        ApiResponse<ProjectDto>.ErrorResult("Project not found.", statusCode: 404)
+                    );
                 }
 
                 if (project.UserId != userGuid)
@@ -292,51 +513,55 @@ namespace ASafariM.Api.Controllers
                 // Update only provided fields
                 if (!string.IsNullOrEmpty(updateProjectDto.Title))
                     project.Title = updateProjectDto.Title;
-                
+
                 if (updateProjectDto.Description != null)
                     project.Description = updateProjectDto.Description;
-                
+
                 if (!string.IsNullOrEmpty(updateProjectDto.Status))
                     project.Status = updateProjectDto.Status;
-                
+
                 if (!string.IsNullOrEmpty(updateProjectDto.Priority))
                     project.Priority = updateProjectDto.Priority;
-                
+
                 if (updateProjectDto.StartDate.HasValue)
-                    project.StartDate = updateProjectDto.StartDate;
-                
+                    project.StartDate = updateProjectDto.StartDate?.ToUniversalTime();
+
                 if (updateProjectDto.EndDate.HasValue)
-                    project.EndDate = updateProjectDto.EndDate;
-                
+                    project.EndDate = updateProjectDto.EndDate?.ToUniversalTime();
+
                 if (updateProjectDto.DueDate.HasValue)
-                    project.DueDate = updateProjectDto.DueDate;
-                
+                    project.DueDate = updateProjectDto.DueDate?.ToUniversalTime();
+
                 if (updateProjectDto.Budget.HasValue)
                     project.Budget = updateProjectDto.Budget;
-                
+
                 if (updateProjectDto.Progress.HasValue)
                     project.Progress = updateProjectDto.Progress.Value;
-                
+
                 if (updateProjectDto.Tags != null)
                     project.Tags = updateProjectDto.Tags;
-                
+
                 if (updateProjectDto.ThumbnailUrl != null)
                     project.ThumbnailUrl = updateProjectDto.ThumbnailUrl;
-                
+
                 if (updateProjectDto.RepositoryUrl != null)
                     project.RepositoryUrl = updateProjectDto.RepositoryUrl;
-                
+
                 if (updateProjectDto.LiveUrl != null)
                     project.LiveUrl = updateProjectDto.LiveUrl;
-                
+
                 if (updateProjectDto.IsPublic.HasValue)
                     project.IsPublic = updateProjectDto.IsPublic.Value;
-                
+
                 if (updateProjectDto.IsFeatured.HasValue)
                     project.IsFeatured = updateProjectDto.IsFeatured.Value;
-                
+
                 if (updateProjectDto.TechStackId.HasValue)
                     project.TechStackId = updateProjectDto.TechStackId;
+
+                // Set UpdatedBy field
+                project.UpdatedBy = userGuid.ToString();
+                project.UpdatedAt = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();
 
@@ -365,16 +590,28 @@ namespace ASafariM.Api.Controllers
                     UserUsername = project.User.Username,
                     TechStackId = project.TechStackId,
                     TechStackName = project.TechStack?.Name,
-                    RepositoriesCount = await _context.Repositories.CountAsync(r => r.ProjectId == project.Id)
+                    RepositoriesCount = await _context.Repositories.CountAsync(r =>
+                        r.ProjectId == project.Id
+                    ),
                 };
 
-                return Ok(ApiResponse<ProjectDto>.SuccessResult(projectDto, "Project updated successfully."));
+                return Ok(
+                    ApiResponse<ProjectDto>.SuccessResult(
+                        projectDto,
+                        "Project updated successfully."
+                    )
+                );
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while updating project {ProjectId}", id);
-                return StatusCode(500, ApiResponse<ProjectDto>.ErrorResult(
-                    "An error occurred while updating the project.", statusCode: 500));
+                return StatusCode(
+                    500,
+                    ApiResponse<ProjectDto>.ErrorResult(
+                        "An error occurred while updating the project.",
+                        statusCode: 500
+                    )
+                );
             }
         }
 
@@ -386,15 +623,20 @@ namespace ASafariM.Api.Controllers
                 var userId = User?.FindFirst("sub")?.Value ?? User?.FindFirst("id")?.Value;
                 if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
                 {
-                    return Unauthorized(ApiResponse<object>.ErrorResult("Invalid token.", statusCode: 401));
+                    return Unauthorized(
+                        ApiResponse<object>.ErrorResult("Invalid token.", statusCode: 401)
+                    );
                 }
 
-                var project = await _context.Projects
-                    .FirstOrDefaultAsync(p => p.Id == id && p.IsActive && !p.IsDeleted);
+                var project = await _context.Projects.FirstOrDefaultAsync(p =>
+                    p.Id == id && p.IsActive && !p.IsDeleted
+                );
 
                 if (project == null)
                 {
-                    return NotFound(ApiResponse<object>.ErrorResult("Project not found.", statusCode: 404));
+                    return NotFound(
+                        ApiResponse<object>.ErrorResult("Project not found.", statusCode: 404)
+                    );
                 }
 
                 if (project.UserId != userGuid)
@@ -409,13 +651,18 @@ namespace ASafariM.Api.Controllers
 
                 await _context.SaveChangesAsync();
 
-                return Ok(ApiResponse<object>.SuccessResult(null, "Project deleted successfully."));
+                return Ok(ApiResponse<object>.SuccessResult(new { }, "Project deleted successfully."));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while deleting project {ProjectId}", id);
-                return StatusCode(500, ApiResponse<object>.ErrorResult(
-                    "An error occurred while deleting the project.", statusCode: 500));
+                return StatusCode(
+                    500,
+                    ApiResponse<object>.ErrorResult(
+                        "An error occurred while deleting the project.",
+                        statusCode: 500
+                    )
+                );
             }
         }
     }

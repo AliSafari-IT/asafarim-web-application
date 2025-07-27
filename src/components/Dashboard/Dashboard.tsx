@@ -1,9 +1,9 @@
-import { useContext, useState } from 'react';
-import { ThemeContext } from '../../context/ThemeContext';
+import { useState } from 'react';
+import { useTheme } from '@asafarim/react-themes';
 import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
-  const { theme } = useContext(ThemeContext);
+  const { mode } = useTheme();
   const [activeTab, setActiveTab] = useState('project-overview');
   
   // Sample data for the dashboard
@@ -17,7 +17,7 @@ const Dashboard = () => {
     ];
 
   return (
-    <div className={`dashboard-container ${theme}`}>
+    <div className={`dashboard-container ${mode}`}>
       <div className="dashboard-header">
         <h1>Dashboard</h1>
         <p>ASafariM Dashboard</p>

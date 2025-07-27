@@ -1,18 +1,18 @@
 import { useAuth } from '../context/AuthContext';
-import { useContext } from 'react';
-import { ThemeContext } from '../context/ThemeContext';
+import { useTheme } from '@asafarim/react-themes';
 
 export const useUserPreferences = () => {
   const { preferences, getPreferences, updatePreferences } = useAuth();
-  const { theme, setTheme } = useContext(ThemeContext);
+  const { currentTheme, setTheme } = useTheme();
 
   const applyThemePreference = async () => {
     if (preferences?.theme && preferences.theme !== 'auto') {
-      setTheme(preferences.theme);
+      // Cast to the Theme type expected by your package
+      setTheme(preferences.theme as any);
     } else if (preferences?.theme === 'auto') {
       // Apply system theme
       const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setTheme(systemPrefersDark ? 'dark' : 'light');
+      setTheme((systemPrefersDark ? 'dark' : 'light') as any);
     }
   };
 
@@ -21,9 +21,10 @@ export const useUserPreferences = () => {
     if (result?.success) {
       if (newTheme === 'auto') {
         const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        setTheme(systemPrefersDark ? 'dark' : 'light');
+        setTheme((systemPrefersDark ? 'dark' : 'light') as any);
       } else {
-        setTheme(newTheme);
+        // Cast to the Theme type expected by your package
+        setTheme(newTheme as any);
       }
     }
     return result;
@@ -35,6 +36,6 @@ export const useUserPreferences = () => {
     updatePreferences,
     applyThemePreference,
     updateThemePreference,
-    currentTheme: theme,
+    currentTheme,
   };
 };

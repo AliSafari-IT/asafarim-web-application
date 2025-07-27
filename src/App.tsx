@@ -5,7 +5,6 @@ import {
   Navigate,
   useLocation,
 } from "react-router-dom";
-import { CustomThemeProvider } from "./context/ThemeContext";
 import { AuthProvider } from "./context/AuthContext";
 import { Suspense } from "react";
 
@@ -21,6 +20,10 @@ import UserSettings from "./components/UserSettings/UserSettings";
 
 // Styles
 import "./styles/settings.css";
+import ProjectsDisplay from "./components/ProjectsDisplay/ProjectsDisplay";
+import AddProject from "./components/AddProject/AddProject";
+import ProjectDetails from "./components/ProjectDetails/ProjectDetails";
+import AdminProjects from "./pages/admin/AdminProjects";
 
 // Component to conditionally render content based on the current route
 const AppContent = () => {
@@ -118,6 +121,11 @@ const AppContent = () => {
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/settings" element={<UserSettings />} />
+      <Route path="/projects" element={<ProjectsDisplay showUserProjectsOnly={true} showAddButton={true} />} />
+      <Route path="/projects/new" element={<AddProject />} />
+      <Route path="/projects/:id" element={<ProjectDetails />} />
+      <Route path="/projects/:id/edit" element={<AddProject />} />
+      <Route path="/admin/projects" element={<AdminProjects />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
@@ -131,7 +139,6 @@ function App() {
       : "";
 
   return (
-    <CustomThemeProvider>
       <AuthProvider>
         <div className="app">
           <BrowserRouter basename={basename}>
@@ -143,7 +150,6 @@ function App() {
           </BrowserRouter>
         </div>
       </AuthProvider>
-    </CustomThemeProvider>
   );
 }
 
