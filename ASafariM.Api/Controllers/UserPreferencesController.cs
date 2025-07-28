@@ -248,12 +248,17 @@ namespace ASafariM.Api.Controllers
                     );
                 }
 
-                // Set the user ID if not provided or ensure it matches current user
+                // Check if user is admin (can create preferences for any user)
+                var isAdmin = User.FindAll("role").Any(c => c.Value.Contains("Admin")) ||
+                             User.FindAll("roles").Any(c => c.Value.Contains("Admin")) ||
+                             User.FindAll(ClaimTypes.Role).Any(c => c.Value.Contains("Admin"));
+
+                // Set the user ID if not provided or ensure it matches current user (unless admin)
                 if (userPreferences.UserId == Guid.Empty)
                 {
                     userPreferences.UserId = userGuid;
                 }
-                else if (userPreferences.UserId != userGuid)
+                else if (userPreferences.UserId != userGuid && !isAdmin)
                 {
                     return Forbid();
                 }

@@ -443,7 +443,8 @@ namespace ASafariM.Api.Controllers
 
                 var query = _context
                     .Projects.Include(p => p.User)
-                    .Include(p => p.TechStack)
+                    .Include(p => p.ProjectTechStacks)
+                        .ThenInclude(pts => pts.TechStack)
                     .Where(p => p.UserId == userGuid && p.IsActive && !p.IsDeleted);
 
                 // Apply filters
@@ -482,7 +483,19 @@ namespace ASafariM.Api.Controllers
                         CreatedAt = p.CreatedAt,
                         UpdatedAt = p.UpdatedAt,
                         UserUsername = p.User.Username,
-                        TechStackName = p.TechStack != null ? p.TechStack.Name : null,
+                        TechStackIds = p
+                            .ProjectTechStacks.Select(pts => pts.TechStackId.ToString())
+                            .ToList(),
+                        TechStacks = p
+                            .ProjectTechStacks.Select(pts => new TechStackDto
+                            {
+                                Id = pts.TechStack.Id,
+                                Name = pts.TechStack.Name,
+                                Category = pts.TechStack.Category,
+                                Description = pts.TechStack.Description,
+                                IsActive = pts.TechStack.IsActive,
+                            })
+                            .ToList(),
                     })
                     .ToListAsync();
 
@@ -587,9 +600,9 @@ namespace ASafariM.Api.Controllers
                         CreatedAt = r.CreatedAt,
                         UpdatedAt = r.UpdatedAt,
                         UserId = r.UserId,
-                        UserUsername = r.User.Username,
+                        UserUsername = r.User != null ? r.User.Username : string.Empty,
                         ProjectId = r.ProjectId,
-                        ProjectTitle = r.Project != null ? r.Project.Title : null,
+                        ProjectTitle = r.Project != null ? r.Project.Title : string.Empty,
                     })
                     .ToListAsync();
 

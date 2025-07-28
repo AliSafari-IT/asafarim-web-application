@@ -15,6 +15,7 @@ namespace ASafariM.Api.Data
         public DbSet<Project> Projects { get; set; }
         public DbSet<TechStack> TechStacks { get; set; }
         public DbSet<Repository> Repositories { get; set; }
+        public DbSet<ProjectTechStack> ProjectTechStacks { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -49,11 +50,21 @@ namespace ASafariM.Api.Data
                 .HasForeignKey(p => p.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<Project>()
-                .HasOne(p => p.TechStack)
-                .WithMany(t => t.Projects)
-                .HasForeignKey(p => p.TechStackId)
-                .OnDelete(DeleteBehavior.SetNull);
+            // Configure many-to-many relationship between Project and TechStack
+            modelBuilder.Entity<ProjectTechStack>()
+                .HasKey(pts => new { pts.ProjectId, pts.TechStackId });
+
+            modelBuilder.Entity<ProjectTechStack>()
+                .HasOne(pts => pts.Project)
+                .WithMany(p => p.ProjectTechStacks)
+                .HasForeignKey(pts => pts.ProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ProjectTechStack>()
+                .HasOne(pts => pts.TechStack)
+                .WithMany(t => t.ProjectTechStacks)
+                .HasForeignKey(pts => pts.TechStackId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Repository>()
                 .HasOne(r => r.User)

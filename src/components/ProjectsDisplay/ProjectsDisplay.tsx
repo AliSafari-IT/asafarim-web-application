@@ -248,10 +248,13 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
 
       {error && <div className="error-message">{error}</div>}
 
-      <PaginatedProjectGrid
-        key={"asafarim-projects-grid"}
-        projects={
-          projects?.map((p) => {
+      {/* Wrap PaginatedProjectGrid in error boundary */}
+      {(() => {
+        try {
+          const transformedProjects = (projects && Array.isArray(projects) ? projects : [])
+            ?.filter((p) => p && typeof p === 'object') // Filter out null/undefined projects
+            ?.map((p) => {
+            console.log('Transforming project:', p.id, p);
             // Map status to expected enum values
             let mappedStatus: "active" | "archived" | "in-progress" | undefined;
             switch (p.status?.toLowerCase()) {
@@ -269,36 +272,44 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
                 mappedStatus = "in-progress";
             }
 
-            return {
-              id: p.id,
-              title: p.title,
+            const transformedProject = {
+              id: p.id || '',
+              title: p.title || 'Untitled Project',
               description: p.description || "",
               status: mappedStatus,
-              priority: p.priority,
-              progress: p.progress,
-              tags: p.tags || [],
-              techStackId: p?.techStackId || undefined,
-              thumbnailUrl: p.thumbnailUrl,
+              priority: p.priority || 'Medium',
+              progress: typeof p.progress === 'number' ? p.progress : 0,
+              tags: Array.isArray(p.tags) ? p.tags : [],
+              thumbnailUrl: p.thumbnailUrl || '',
               image: p.image || p.thumbnailUrl || "",
-              createdAt: p.createdAt,
-              updatedAt: p.updatedAt,
-              userId: p.userId,
-              isPublic: p.isPublic,
-              isFeatured: p.isFeatured,
-              isActive: p.isActive,
-              isDeleted: p.isDeleted,
-              repositoriesCount: p.repositoriesCount || 0,
-              projectsCount: p.projectsCount || 0,
-              // Map to expected array format
-              techStack: p.techStackId
-                ? [
-                    {
-                      id: p.techStackId,
-                      name: p.techStackName || "Unknown",
-                      icon: "",
-                      color: "#666666",
-                    },
-                  ]
+              createdAt: p.createdAt || new Date().toISOString(),
+              updatedAt: p.updatedAt || new Date().toISOString(),
+              userId: p.userId || p.userUsername || '',
+              author: p.userUsername || 'Unknown Author',
+              isPublic: Boolean(p.isPublic),
+              isFeatured: Boolean(p.isFeatured),
+              featured: Boolean(p.isFeatured), // Alternative property name
+              isActive: Boolean(p.isActive),
+              isDeleted: Boolean(p.isDeleted),
+              repositoriesCount: typeof p.repositoriesCount === 'number' ? p.repositoriesCount : 0,
+              projectsCount: typeof p.projectsCount === 'number' ? p.projectsCount : 0,
+              lastUpdated: p.updatedAt || new Date().toISOString(),
+              // Use techStack (singular) as expected by ProjectCard component
+              techStack: Array.isArray(p.techStackIds) 
+                ? p.techStackIds.map((id) => ({
+                    name: (Array.isArray(p.techStacks) ? p.techStacks.find((ts) => ts.id === id)?.name : null) || "Unknown",
+                    icon: (Array.isArray(p.techStacks) ? p.techStacks.find((ts) => ts.id === id)?.icon : null) || "",
+                    color: (Array.isArray(p.techStacks) ? p.techStacks.find((ts) => ts.id === id)?.color : null) || "#666666",
+                  }))
+                : [],
+              // Also provide techStacks for compatibility
+              techStacks: Array.isArray(p.techStackIds) 
+                ? p.techStackIds.map((id) => ({
+                    id: id || '',
+                    name: (Array.isArray(p.techStacks) ? p.techStacks.find((ts) => ts.id === id)?.name : null) || "Unknown",
+                    icon: (Array.isArray(p.techStacks) ? p.techStacks.find((ts) => ts.id === id)?.icon : null) || "",
+                    color: (Array.isArray(p.techStacks) ? p.techStacks.find((ts) => ts.id === id)?.color : null) || "#666666",
+                  }))
                 : [],
               links: [
                 ...(p.repositoryUrl
@@ -321,17 +332,36 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
                   : []),
               ],
             };
-          }) || []
+            
+            console.log('Transformed project:', transformedProject.id, transformedProject);
+            return transformedProject;
+          }) || [];
+
+          console.log('Final transformed projects array:', transformedProjects);
+          
+          return (
+            <PaginatedProjectGrid
+              key={"asafarim-projects-grid"}
+              projects={transformedProjects}
+              cardsPerPage={6}
+              currentTheme={currentTheme.mode}
+              enableSearch={false}
+              showTechStackIcons={true}
+              onProjectClick={(project: any) => {
+                console.log("Clicked project:", project.title);
+                navigate(`/projects/${project.id}`);
+              }}
+            />
+          );
+        } catch (error) {
+          console.error('Error rendering PaginatedProjectGrid:', error);
+          return (
+            <div className="error-message">
+              Error displaying projects grid. Please check the console for details.
+            </div>
+          );
         }
-        cardsPerPage={6}
-        currentTheme={currentTheme.mode}
-        enableSearch={false}
-        showTechStackIcons={true}
-        onProjectClick={(project: any) => {
-          console.log("Clicked project:", project.title);
-          navigate(`/projects/${project.id}`);
-        }}
-      />
+      })()}
 
       {/* Commented out for testing PaginatedProjectGrid
       <ProjectGrid
