@@ -1,10 +1,8 @@
 import { 
   IProject, 
-  IProjectSummary, 
   ICreateProject, 
   IUpdateProject, 
-  IPaginatedProjectsResponse,
-  IAdminProjectsResponse
+  IPaginatedProjectsResponse 
 } from '../interfaces/IProject';
 import { IApiResponse } from '../interfaces/IApiResponse';
 
@@ -95,47 +93,6 @@ const handleResponse = async <T>(response: Response): Promise<IApiResponse<T>> =
 };
 
 export class ProjectService {
-  /**
-   * Get all projects for admin users
-   */
-  static async getAdminProjects(
-    page: number = 1,
-    pageSize: number = 20,
-    search?: string,
-    status?: string
-  ): Promise<IApiResponse<IPaginatedProjectsResponse>> {
-    try {
-      const queryParams = new URLSearchParams({
-        page: page.toString(),
-        pageSize: pageSize.toString(),
-      });
-
-      if (search) queryParams.append('search', search);
-      if (status) queryParams.append('status', status);
-
-      console.log('ProjectService: Calling admin endpoint:', `${API_BASE_URL}/projects/admin/all?${queryParams.toString()}`);
-
-      const response = await fetch(`${API_BASE_URL}/projects/admin/all?${queryParams.toString()}`, {
-        method: 'GET',
-        headers: getAuthHeaders(),
-      });
-
-      console.log('ProjectService: Admin API response status:', response.status);
-      const result = await handleResponse<IPaginatedProjectsResponse>(response);
-      console.log('ProjectService: Admin API result:', result);
-      
-      return result;
-    } catch (error) {
-      console.error('Error fetching admin projects:', error);
-      return {
-        success: false,
-        message: 'Network error occurred while fetching admin projects',
-        statusCode: 0,
-        timestamp: new Date()
-      };
-    }
-  }
-
   /**
    * Get paginated list of projects with optional filters
    */
@@ -350,6 +307,49 @@ export class ProjectService {
    */
   static async updateProjectStatus(id: string, status: string): Promise<IApiResponse<IProject>> {
     return this.updateProject(id, { status });
+  }
+
+  /**
+   * Get all projects for admin with optional filters (admin endpoint)
+   */
+  static async getAdminProjects(
+    page: number = 1,
+    pageSize: number = 20,
+    search?: string,
+    status?: string
+  ): Promise<IApiResponse<IPaginatedProjectsResponse>> {
+    try {
+      const queryParams = new URLSearchParams({
+        page: page.toString(),
+        pageSize: pageSize.toString(),
+      });
+
+      if (search) queryParams.append('search', search);
+      if (status) queryParams.append('status', status);
+
+      console.log('ProjectService: Making admin projects API call to:', `${API_BASE_URL}/projects/admin/all?${queryParams.toString()}`);
+
+      const response = await fetch(`${API_BASE_URL}/projects/admin/all?${queryParams.toString()}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      });
+
+      console.log('ProjectService: Admin projects API response status:', response.status);
+      console.log('ProjectService: Admin projects API response ok:', response.ok);
+
+      const result = await handleResponse<IPaginatedProjectsResponse>(response);
+      console.log('ProjectService: Admin projects processed result:', result);
+
+      return result;
+    } catch (error) {
+      console.error('Error fetching admin projects:', error);
+      return {
+        success: false,
+        message: 'Network error occurred while fetching admin projects',
+        statusCode: 0,
+        timestamp: new Date()
+      };
+    }
   }
 }
 

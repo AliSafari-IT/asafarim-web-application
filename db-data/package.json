@@ -4,7 +4,6 @@
   "description": "Database population script for ASafariM web application",
   "main": "populate-db.js",
   "scripts": {
-    "populate": "node populate-db.js",
     "start": "node populate-db.js"
   },
   "dependencies": {

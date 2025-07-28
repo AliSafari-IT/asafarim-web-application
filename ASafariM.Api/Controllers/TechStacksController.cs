@@ -274,7 +274,7 @@ namespace ASafariM.Api.Controllers
 
                 // Check if tech stack is being used by any projects
                 var projectsUsingTechStack = await _context
-                    .Projects.Where(p => p.TechStackId == id)
+                    .ProjectTechStacks.Where(pts => pts.TechStackId == id)
                     .CountAsync();
 
                 if (projectsUsingTechStack > 0)

@@ -1,4 +1,5 @@
 import { IBaseEntity } from './IBaseEntity';
+import { ITechStack } from './ITechStack';
 
 export interface IProject extends IBaseEntity {
   title: string;
@@ -17,9 +18,9 @@ export interface IProject extends IBaseEntity {
   isPublic: boolean;
   isFeatured: boolean;
   userId: string;
-  techStackId?: string;
+  techStackIds: string[];
+  techStacks?: ITechStack[];
   userUsername?: string;
-  techStackName?: string;
 }
 
 export interface IProjectSummary {
@@ -42,8 +43,8 @@ export interface IProjectSummary {
   updatedAt: string;
   userId: string;
   userUsername: string;
-  techStackId?: string;
-  techStackName?: string;
+  techStackIds: string[];
+  techStacks?: ITechStack[];
   repositoriesCount?: number;
   projectsCount?: number;
 }
@@ -63,7 +64,7 @@ export interface ICreateProject {
   liveUrl?: string;
   isPublic?: boolean;
   isFeatured?: boolean;
-  techStackId?: string;
+  techStackIds?: string[];
 }
 
 export interface IUpdateProject {
@@ -82,7 +83,7 @@ export interface IUpdateProject {
   liveUrl?: string;
   isPublic?: boolean;
   isFeatured?: boolean;
-  techStackId?: string;
+  techStackIds?: string[];
 }
 
 export interface IPaginatedProjectsResponse {

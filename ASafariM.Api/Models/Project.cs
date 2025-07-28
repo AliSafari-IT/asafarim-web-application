@@ -49,15 +49,17 @@ namespace ASafariM.Api.Models
         [Required]
         public Guid UserId { get; set; }
 
-        public Guid? TechStackId { get; set; }
-
         // Navigation properties
         [ForeignKey("UserId")]
         public virtual User User { get; set; } = null!;
 
-        [ForeignKey("TechStackId")]
-        public virtual TechStack? TechStack { get; set; }
-
         public virtual ICollection<Repository> Repositories { get; set; } = new List<Repository>();
+        
+        // Many-to-many relationship with TechStacks
+        public virtual ICollection<ProjectTechStack> ProjectTechStacks { get; set; } = new List<ProjectTechStack>();
+        
+        // Helper property to get TechStacks directly
+        [NotMapped]
+        public virtual ICollection<TechStack> TechStacks => ProjectTechStacks.Select(pts => pts.TechStack).ToList();
     }
 }

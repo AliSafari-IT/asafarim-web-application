@@ -39,7 +39,7 @@ namespace ASafariM.Api.DTOs
         public bool IsPublic { get; set; } = true;
         public bool IsFeatured { get; set; } = false;
 
-        public Guid? TechStackId { get; set; }
+        public List<string> TechStackIds { get; set; } = new List<string>();
     }
 
     public class UpdateProjectDto
@@ -80,7 +80,7 @@ namespace ASafariM.Api.DTOs
         public bool? IsPublic { get; set; }
         public bool? IsFeatured { get; set; }
 
-        public Guid? TechStackId { get; set; }
+        public List<string> TechStackIds { get; set; } = new List<string>();
     }
 
     public class ProjectDto
@@ -108,8 +108,8 @@ namespace ASafariM.Api.DTOs
         // Related data
         public Guid UserId { get; set; }
         public string UserUsername { get; set; } = string.Empty;
-        public Guid? TechStackId { get; set; }
-        public string? TechStackName { get; set; }
+        public List<string> TechStackIds { get; set; } = new List<string>();
+        public List<TechStackDto>? TechStacks { get; set; }
         public int RepositoriesCount { get; set; }
     }
 
@@ -128,7 +128,8 @@ namespace ASafariM.Api.DTOs
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public string UserUsername { get; set; } = string.Empty;
-        public string? TechStackName { get; set; }
+        public List<string> TechStackIds { get; set; } = new List<string>();
+        public List<TechStackDto>? TechStacks { get; set; }
     }
 
     // Repository DTOs

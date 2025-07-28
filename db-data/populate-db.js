@@ -5,9 +5,26 @@ import fetch from "node-fetch";
 // Configuration
 const API_BASE_URL = "http://localhost:5242/api";
 const ADMIN_CREDENTIALS = {
-    email: "admin@asafarim.com",
-    password: "Admin123!",
-    username: "admin"
+    email: "ali@asafarim.com",
+    password: "Ali+123456",
+    username: "ali",
+    firstName: "Ali",
+    lastName: "Safari",
+    bio: "Full Stack Developer with a passion for building scalable web applications.",
+    website: "https://asafarim.com",
+    location: "Belgium",
+    isAdmin: true,
+    isActive: true,
+    isEmailVerified: true,
+    avatar: "https://asafarim.com/ali_profile-B31cYQRH.jpg",
+    socialLinks: {
+        github: "https://github.com/AliSafari-IT"
+    },
+    preferences: {
+        theme: "dark",
+    },
+    token: null,
+    role: "Admin"
 };
 
 const MY_REPOS_URL = "https://api.github.com/users/AliSafari-IT/repos";

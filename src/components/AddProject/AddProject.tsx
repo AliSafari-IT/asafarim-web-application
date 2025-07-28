@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ProjectService } from '../../services/ProjectService';
 import { TechStackService } from '../../services/TechStackService';
-import { ICreateProject, IProject } from '../../interfaces/IProject';
+import { ICreateProject } from '../../interfaces/IProject';
 import { ITechStack } from '../../interfaces/ITechStack';
+import TechStackMultiSelect from './TechStackMultiSelect';
 import './AddProject.css';
 
 interface FormErrors {
@@ -18,7 +19,7 @@ interface FormErrors {
   tags?: string;
   repositoryUrl?: string;
   liveUrl?: string;
-  techStackId?: string;
+  techStackIds?: string;
 }
 
 interface AddProjectProps {
@@ -50,7 +51,7 @@ const AddProject: React.FC<AddProjectProps> = ({ onProjectAdded, onCancel }) => 
     liveUrl: '',
     isPublic: false,
     isFeatured: false,
-    techStackId: ''
+    techStackIds: []
   });
   const [tagInput, setTagInput] = useState('');
   const [techStacks, setTechStacks] = useState<ITechStack[]>([]);
@@ -83,7 +84,7 @@ const AddProject: React.FC<AddProjectProps> = ({ onProjectAdded, onCancel }) => 
               liveUrl: project.liveUrl || '',
               isPublic: project.isPublic,
               isFeatured: project.isFeatured,
-              techStackId: project.techStackId || ''
+              techStackIds: project.techStackIds || []
             });
           } else {
             setApiError(response.message || 'Failed to load project');
@@ -222,6 +223,13 @@ const AddProject: React.FC<AddProjectProps> = ({ onProjectAdded, onCancel }) => 
     }
   };
 
+  const handleTechStackChange = (selectedIds: string[]) => {
+    setFormData(prev => ({
+      ...prev,
+      techStackIds: selectedIds
+    }));
+  };
+
   const handleTagInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTagInput(e.target.value);
   };
@@ -259,9 +267,8 @@ const AddProject: React.FC<AddProjectProps> = ({ onProjectAdded, onCancel }) => 
     }
 
     setIsLoading(true);
-    setApiError(null); // Clear previous errors
+    setApiError(null);
     
-    // Clean up form data - convert empty strings to null for optional fields
     const cleanedFormData = {
       ...formData,
       description: formData.description?.trim() || undefined,
@@ -271,47 +278,30 @@ const AddProject: React.FC<AddProjectProps> = ({ onProjectAdded, onCancel }) => 
       thumbnailUrl: formData.thumbnailUrl?.trim() || undefined,
       repositoryUrl: formData.repositoryUrl?.trim() || undefined,
       liveUrl: formData.liveUrl?.trim() || undefined,
-      techStackId: formData.techStackId?.trim() || undefined,
-      title: formData.title.trim(), // Remove trailing space
+      title: formData.title.trim(),
     };
-    
-    // Debug: Log the data being sent
-    console.log('Sending project data:', cleanedFormData);
     
     try {
       let response;
       
       if (isEditMode && id) {
-        // Update existing project
         response = await ProjectService.updateProject(id, cleanedFormData);
       } else {
-        // Create new project
         response = await ProjectService.createProject(cleanedFormData);
       }
       
       if (response.success && response.data) {
-        // Call callback if provided, otherwise navigate
         if (onProjectAdded) {
           onProjectAdded();
         } else {
-          navigate(`/projects/${response.data.id || id}`);
+          navigate(`/projects/${response.data.id}`);
         }
       } else {
-        // Handle API error
-        let errorMessage = response.message || `Failed to ${isEditMode ? 'update' : 'create'} project. Please check your input and try again.`;
-        
-        // Special handling for authentication errors
-        if (response.statusCode === 401) {
-          errorMessage = 'Your session has expired. Please refresh the page and log in again.';
-        }
-        
-        setApiError(errorMessage);
-        console.error(`Failed to ${isEditMode ? 'update' : 'create'} project:`, errorMessage);
+        setApiError(response.message || `Failed to ${isEditMode ? 'update' : 'create'} project`);
       }
     } catch (error) {
-      const errorMessage = `Network error occurred while ${isEditMode ? 'updating' : 'creating'} project. Please try again.`;
-      setApiError(errorMessage);
       console.error(`Error ${isEditMode ? 'updating' : 'creating'} project:`, error);
+      setApiError(`Failed to ${isEditMode ? 'update' : 'create'} project`);
     } finally {
       setIsLoading(false);
     }
@@ -325,33 +315,27 @@ const AddProject: React.FC<AddProjectProps> = ({ onProjectAdded, onCancel }) => 
     }
   };
 
+  if (isLoadingProject) {
+    return (
+      <div className="add-project-container">
+        <div className="loading-message">Loading project data...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="add-project-container">
       <div className="add-project-header">
         <h2>{isEditMode ? 'Edit Project' : 'Add New Project'}</h2>
-        <button 
-          type="button" 
-          className="btn btn-secondary"
-          onClick={handleCancel}
-          disabled={isLoading}
-        >
-          Cancel
-        </button>
       </div>
 
       {apiError && (
-        <div className="error-message api-error">
+        <div className="error-message">
           {apiError}
         </div>
       )}
 
-      {isLoadingProject ? (
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>Loading project data...</p>
-        </div>
-      ) : (
-        <form onSubmit={handleSubmit} className="add-project-form">
+      <form onSubmit={handleSubmit} className="add-project-form">
         {/* Title */}
         <div className="form-group">
           <label htmlFor="title">Project Title *</label>
@@ -382,6 +366,15 @@ const AddProject: React.FC<AddProjectProps> = ({ onProjectAdded, onCancel }) => 
           />
           {errors.description && <span className="error-message">{errors.description}</span>}
         </div>
+
+        {/* Tech Stacks Multi-Select */}
+        <TechStackMultiSelect
+          techStacks={techStacks}
+          selectedTechStackIds={formData.techStackIds || []}
+          onChange={handleTechStackChange}
+          isLoading={isLoadingTechStacks}
+          error={errors.techStackIds}
+        />
 
         {/* Status and Priority Row */}
         <div className="form-row">
@@ -549,30 +542,6 @@ const AddProject: React.FC<AddProjectProps> = ({ onProjectAdded, onCancel }) => 
           />
         </div>
 
-        {/* Tech Stack */}
-        <div className="form-group">
-          <label htmlFor="techStackId">Tech Stack</label>
-          <select
-            id="techStackId"
-            name="techStackId"
-            value={formData.techStackId}
-            onChange={handleInputChange}
-            disabled={isLoadingTechStacks}
-          >
-            <option value="">
-              {isLoadingTechStacks ? 'Loading tech stacks...' : 'Select a tech stack'}
-            </option>
-            {techStacks.map((techStack) => (
-              <option key={techStack.id} value={techStack.id}>
-                {techStack.name} ({techStack.category})
-              </option>
-            ))}
-          </select>
-          {errors.techStackId && (
-            <span className="error-message">{errors.techStackId}</span>
-          )}
-        </div>
-
         {/* Checkboxes */}
         <div className="form-row">
           <div className="form-group checkbox-group">
@@ -621,7 +590,6 @@ const AddProject: React.FC<AddProjectProps> = ({ onProjectAdded, onCancel }) => 
           </button>
         </div>
       </form>
-      )}
     </div>
   );
 };

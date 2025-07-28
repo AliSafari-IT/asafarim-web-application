@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ASafariM.Api.Models
 {
@@ -29,12 +30,17 @@ namespace ASafariM.Api.Models
 
         public List<string> Features { get; set; } = new List<string>();
 
-        public bool IsActive { get; set; } = true;
+        public new bool IsActive { get; set; } = true;
 
         [Range(1, 5)]
         public int PopularityRating { get; set; } = 3;
 
         // Navigation properties
-        public virtual ICollection<Project> Projects { get; set; } = new List<Project>();
+        // Many-to-many relationship with Projects
+        public virtual ICollection<ProjectTechStack> ProjectTechStacks { get; set; } = new List<ProjectTechStack>();
+        
+        // Helper property to get Projects directly
+        [NotMapped]
+        public virtual ICollection<Project> Projects => ProjectTechStacks.Select(pts => pts.Project).ToList();
     }
 }

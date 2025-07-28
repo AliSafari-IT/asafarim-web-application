@@ -78,16 +78,19 @@ const AdminProjects: React.FC = () => {
       console.log('AdminProjects: Is array:', Array.isArray(response.data));
 
       if (response.success && response.data) {
-        // Handle case where response.data is directly an array of projects
-        const projects = Array.isArray(response.data) ? response.data : [];
-        console.log('AdminProjects: Setting projects state with', projects.length, 'projects');
+        // Handle paginated response structure
+        const data = response.data;
+        console.log('AdminProjects: Paginated response data:', data);
+        
         setState(prev => ({
           ...prev,
-          projects: projects,
-          totalPages: 1, // For now, set to 1 until we get proper pagination
-          totalCount: projects.length,
+          projects: data.items || [],
+          totalPages: data.totalPages || 1,
+          totalCount: data.totalCount || 0,
           loading: false
         }));
+        
+        console.log('AdminProjects: Updated state with', data.items?.length || 0, 'projects');
       } else {
         console.log('AdminProjects: API call failed:', response.message);
         setState(prev => ({
