@@ -1,0 +1,320 @@
+/* Admin Users Styles */
+.admin-users {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.admin-header h1 {
+  color: var(--text-primary);
+  margin: 0;
+  font-size: 2rem;
+}
+
+.admin-stats {
+  display: flex;
+  gap: 2rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.admin-error {
+  background-color: var(--error-background);
+  color: var(--error-text);
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  border: 1px solid var(--error-border);
+}
+
+.admin-error button {
+  background: none;
+  border: none;
+  color: var(--error-text);
+  text-decoration: underline;
+  cursor: pointer;
+  margin-left: 1rem;
+}
+
+.admin-loading {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+.admin-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.search-controls {
+  display: flex;
+  gap: 1rem;
+  flex: 1;
+  min-width: 300px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background-color: var(--input-background);
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px var(--primary-color-alpha);
+}
+
+.filter-select {
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background-color: var(--input-background);
+  color: var(--text-primary);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px var(--primary-color-alpha);
+}
+
+.bulk-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.bulk-delete-btn {
+  background-color: var(--error-color);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s ease;
+}
+
+.bulk-delete-btn:hover:not(:disabled) {
+  background-color: var(--error-color-dark);
+}
+
+.bulk-delete-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.users-table-container {
+  background-color: var(--card-background);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: var(--shadow-medium);
+  margin-bottom: 2rem;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.users-table th,
+.users-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.users-table th {
+  background-color: var(--table-header-background);
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.users-table tbody tr:hover {
+  background-color: var(--table-row-hover);
+}
+
+.users-table td {
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+
+.role-select {
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--input-background);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  min-width: 100px;
+}
+
+.role-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.active {
+  background-color: var(--success-background);
+  color: var(--success-text);
+  border: 1px solid var(--success-border);
+}
+
+.status-badge.inactive {
+  background-color: var(--warning-background);
+  color: var(--warning-text);
+  border: 1px solid var(--warning-border);
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.delete-btn {
+  background-color: var(--error-color);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease;
+}
+
+.delete-btn:hover:not(:disabled) {
+  background-color: var(--error-color-dark);
+}
+
+.delete-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.pagination-btn {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background-color: var(--primary-color-dark);
+}
+
+.pagination-btn:disabled {
+  background-color: var(--button-disabled);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  margin: 0 1rem;
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .admin-users {
+  --table-header-background: rgba(255, 255, 255, 0.05);
+  --table-row-hover: rgba(255, 255, 255, 0.02);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .admin-users {
+    padding: 1rem;
+  }
+  
+  .users-table-container {
+    overflow-x: auto;
+  }
+  
+  .users-table {
+    min-width: 800px;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .admin-stats {
+    gap: 1rem;
+  }
+  
+  .admin-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .search-controls {
+    flex-direction: column;
+    min-width: auto;
+  }
+  
+  .users-table th,
+  .users-table td {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.9rem;
+  }
+  
+  .pagination {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .pagination-btn {
+    width: 100%;
+    max-width: 200px;
+  }
+}

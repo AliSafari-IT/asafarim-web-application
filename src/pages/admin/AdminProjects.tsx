@@ -4,6 +4,9 @@ import { useAuth } from '../../context/AuthContext';
 import { ProjectService } from '../../services/ProjectService';
 import { IProjectSummary } from '../../interfaces/IProject';
 import './AdminProjects.css';
+import AdminHeader from '../../components/AdminHeader';
+import SearchItems from '../../components/SearchItems';
+import DDItems from '../../components/DDItems';
 
 interface AdminProjectsState {
   projects: IProjectSummary[];
@@ -58,7 +61,9 @@ const AdminProjects: React.FC = () => {
       currentPage: state.currentPage,
       pageSize: 20,
       searchTerm: state.searchTerm || undefined,
-      statusFilter: state.statusFilter || undefined
+      statusFilter: state.statusFilter || undefined,
+      sortBy: state.sortBy,
+      sortOrder: state.sortOrder
     });
 
     setState(prev => ({ ...prev, loading: true, error: null }));
@@ -68,7 +73,9 @@ const AdminProjects: React.FC = () => {
         state.currentPage,
         20, // items per page
         state.searchTerm || undefined,
-        state.statusFilter || undefined
+        state.statusFilter || undefined,
+        state.sortBy,
+        state.sortOrder
       );
       
       console.log('AdminProjects: API response:', response);
@@ -145,7 +152,7 @@ const AdminProjects: React.FC = () => {
 
   useEffect(() => {
     loadProjects();
-  }, [state.currentPage, state.searchTerm, state.statusFilter, user]);
+  }, [state.currentPage, state.searchTerm, state.statusFilter, state.sortBy, state.sortOrder, user]);
 
   // Handle project selection
   const toggleProjectSelection = (projectId: string) => {
@@ -248,12 +255,6 @@ const AdminProjects: React.FC = () => {
     }
   };
 
-  // Handle search and filters
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setState(prev => ({ ...prev, currentPage: 1 }));
-  };
-
   const handleSortChange = (newSortBy: string) => {
     setState(prev => ({
       ...prev,
@@ -275,75 +276,82 @@ const AdminProjects: React.FC = () => {
     );
   }
 
+  const projectManagementIcon = (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M16 4H18V2H16V4Z"/>
+      <path d="M16 8H18V6H16V8Z"/>
+      <path d="M16 12H18V10H16V12Z"/>
+      <path d="M13 4H15V2H13V4Z"/>
+      <path d="M13 8H15V6H13V8Z"/>
+      <path d="M13 12H15V10H13V12Z"/>
+      <rect x="2" y="3" width="9" height="2" rx="1"/>
+      <rect x="2" y="7" width="7" height="2" rx="1"/>
+      <rect x="2" y="11" width="8" height="2" rx="1"/>
+      <path d="M20 14H4C3.45 14 3 14.45 3 15V20C3 20.55 3.45 21 4 21H20C20.55 21 21 20.55 21 20V15C21 14.45 20.55 14 20 14ZM19 19H5V16H19V19Z"/>
+      <circle cx="7" cy="17.5" r="0.8" fill="currentColor"/>
+      <circle cx="12" cy="17.5" r="0.8" fill="currentColor"/>
+      <circle cx="17" cy="17.5" r="0.8" fill="currentColor"/>
+    </svg>
+  );
+
   return (
     <div className="admin-projects-container">
       <div className="admin-projects-header">
-        <div className="header-content">
-          <h1>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M12,7C13.33,7 14.35,8.12 14.35,9.5C14.35,10.88 13.33,12 12,12C10.67,12 9.65,10.88 9.65,9.5C9.65,8.12 10.67,7 12,7M18,14.25C18,16.18 15.58,17.75 12,17.75C8.42,17.75 6,16.18 6,14.25V13.5C6,13.5 8.21,14.75 12,14.75C15.79,14.75 18,13.5 18,13.5V14.25Z"/>
-            </svg>
-            Admin: Manage All Projects
-          </h1>
-          <div className="project-stats">
-            <span className="stat-item">
-              <strong>{state.totalCount}</strong> Total Projects
-            </span>
-            {state.selectedProjects.size > 0 && (
-              <span className="stat-item selected">
-                <strong>{state.selectedProjects.size}</strong> Selected
-              </span>
-            )}
-          </div>
-        </div>
+        <AdminHeader
+          title="Project Management"
+          icon={projectManagementIcon}
+          totalCount={state.totalCount}
+          itemName="Projects"
+          currentPage={state.currentPage}
+          totalPages={state.totalPages}
+          showPagination={state.totalPages > 1}
+        />        
       </div>
 
       {/* Search and Filters */}
       <div className="admin-controls">
-        <form onSubmit={handleSearch} className="search-form">
-          <div className="search-input-group">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z"/>
-            </svg>
-            <input
-              type="text"
-              placeholder="Search projects..."
-              value={state.searchTerm}
-              onChange={(e) => setState(prev => ({ ...prev, searchTerm: e.target.value }))}
-            />
-          </div>
-          <button type="submit" className="btn btn-secondary">Search</button>
-        </form>
+
+        <SearchItems
+          searchTerm={state.searchTerm}
+          onSearchChange={(newSearchTerm) => setState(prev => ({ ...prev, searchTerm: newSearchTerm }))}
+          placeholder="Search projects..."
+          searchType='minimal'
+        />
 
         <div className="filter-controls">
-          <select
-            value={state.statusFilter}
-            onChange={(e) => setState(prev => ({ ...prev, statusFilter: e.target.value, currentPage: 1 }))}
-            className="filter-select"
-          >
-            <option value="">All Statuses</option>
-            <option value="Planning">Planning</option>
-            <option value="In Progress">In Progress</option>
-            <option value="On Hold">On Hold</option>
-            <option value="Completed">Completed</option>
-            <option value="Cancelled">Cancelled</option>
-          </select>
+          <DDItems
+            selectedValue={state.statusFilter}
+            onValueChange={(value) => setState(prev => ({ ...prev, statusFilter: value, currentPage: 1 }))}
+            items={[
+              { value: 'Planning', label: 'Planning' },
+              { value: 'In Progress', label: 'In Progress' },
+              { value: 'On Hold', label: 'On Hold' },
+              { value: 'Completed', label: 'Completed' },
+              { value: 'Cancelled', label: 'Cancelled' }
+            ]}
+            placeholder="All Statuses"
+            dropdownType='compact'
+          />
 
-          <select
-            value={`${state.sortBy}-${state.sortOrder}`}
-            onChange={(e) => {
-              const [sortBy, sortOrder] = e.target.value.split('-');
+          <DDItems
+            selectedValue={`${state.sortBy}-${state.sortOrder}`}
+            onValueChange={(value) => {
+              const [sortBy, sortOrder] = value.split('-');
               setState(prev => ({ ...prev, sortBy, sortOrder: sortOrder as 'asc' | 'desc', currentPage: 1 }));
             }}
+            items={[
+              { value: 'createdAt-desc', label: 'Newest First' },
+              { value: 'createdAt-asc', label: 'Oldest First' },
+              { value: 'title-asc', label: 'Title A-Z' },
+              { value: 'title-desc', label: 'Title Z-A' },
+              { value: 'status-asc', label: 'Status A-Z' },
+              { value: 'progress-desc', label: 'Progress High-Low' }
+            ]}
+            placeholder="Sort by..."
+            dropdownType="compact"
             className="filter-select"
-          >
-            <option value="createdAt-desc">Newest First</option>
-            <option value="createdAt-asc">Oldest First</option>
-            <option value="title-asc">Title A-Z</option>
-            <option value="title-desc">Title Z-A</option>
-            <option value="status-asc">Status A-Z</option>
-            <option value="progress-desc">Progress High-Low</option>
-          </select>
+          />
+
         </div>
       </div>
 

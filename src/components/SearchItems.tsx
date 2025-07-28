@@ -2,7 +2,7 @@ import React from 'react';
 
 type SearchType = 'default' | 'compact' | 'outlined' | 'minimal';
 
-interface SearchProjectsProps {
+interface SearchItemsProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
   placeholder?: string;
@@ -10,7 +10,7 @@ interface SearchProjectsProps {
   searchType?: SearchType;
 }
 
-const SearchProjects: React.FC<SearchProjectsProps> = ({
+const SearchItems: React.FC<SearchItemsProps> = ({
   searchTerm,
   onSearchChange,
   placeholder = "Search projects...",
@@ -224,4 +224,4 @@ const SearchProjects: React.FC<SearchProjectsProps> = ({
   );
 };
 
-export default SearchProjects;
+export default SearchItems;

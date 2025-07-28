@@ -316,12 +316,16 @@ export class ProjectService {
     page: number = 1,
     pageSize: number = 20,
     search?: string,
-    status?: string
+    status?: string,
+    sortBy: string = 'createdAt',
+    sortOrder: 'asc' | 'desc' = 'desc'
   ): Promise<IApiResponse<IPaginatedProjectsResponse>> {
     try {
       const queryParams = new URLSearchParams({
         page: page.toString(),
         pageSize: pageSize.toString(),
+        sortBy: sortBy,
+        sortOrder: sortOrder
       });
 
       if (search) queryParams.append('search', search);

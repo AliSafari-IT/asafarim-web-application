@@ -182,7 +182,9 @@ namespace ASafariM.Api.Controllers
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
             [FromQuery] string? search = null,
-            [FromQuery] string? status = null
+            [FromQuery] string? status = null,
+            [FromQuery] string sortBy = "createdAt",
+            [FromQuery] string sortOrder = "desc"
         )
         {
             try
@@ -221,8 +223,27 @@ namespace ASafariM.Api.Controllers
 
                 _logger.LogInformation("Admin query found {TotalCount} projects", totalCount);
 
+                // Apply sorting
+                query = sortBy.ToLower() switch
+                {
+                    "title" => sortOrder.ToLower() == "asc" 
+                        ? query.OrderBy(p => p.Title) 
+                        : query.OrderByDescending(p => p.Title),
+                    "status" => sortOrder.ToLower() == "asc" 
+                        ? query.OrderBy(p => p.Status) 
+                        : query.OrderByDescending(p => p.Status),
+                    "progress" => sortOrder.ToLower() == "asc" 
+                        ? query.OrderBy(p => p.Progress) 
+                        : query.OrderByDescending(p => p.Progress),
+                    "createdat" or "created" => sortOrder.ToLower() == "asc" 
+                        ? query.OrderBy(p => p.CreatedAt) 
+                        : query.OrderByDescending(p => p.CreatedAt),
+                    _ => sortOrder.ToLower() == "asc" 
+                        ? query.OrderBy(p => p.CreatedAt) 
+                        : query.OrderByDescending(p => p.CreatedAt)
+                };
+
                 var projects = await query
-                    .OrderByDescending(p => p.CreatedAt)
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
                     .Select(p => new ProjectSummaryDto
