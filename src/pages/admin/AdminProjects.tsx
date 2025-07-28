@@ -82,15 +82,50 @@ const AdminProjects: React.FC = () => {
         const data = response.data;
         console.log('AdminProjects: Paginated response data:', data);
         
+        // The response might have different structures, let's handle both
+        let projects: IProjectSummary[] = [];
+        let totalCount = 0;
+        let totalPages = 1;
+        
+        if (Array.isArray(data)) {
+          // Direct array response
+          projects = data;
+          totalCount = data.length;
+          totalPages = 1;
+        } else if (data && typeof data === 'object') {
+          // Paginated response object
+          if ('items' in data && Array.isArray(data.items)) {
+            projects = data.items;
+            totalCount = data.totalCount || data.items.length;
+            totalPages = data.totalPages || 1;
+          } else if ('data' in data && Array.isArray(data.data)) {
+            projects = data.data;
+            totalCount = data.totalCount || data.data.length;
+            totalPages = data.totalPages || 1;
+          } else {
+            // Fallback: check if data itself is the projects array
+            console.log('AdminProjects: Unexpected response structure, keys:', Object.keys(data));
+            const dataValues = Object.values(data);
+            const arrayValue = dataValues.find(val => Array.isArray(val));
+            if (arrayValue) {
+              projects = arrayValue as IProjectSummary[];
+              totalCount = projects.length;
+            }
+          }
+        }
+        
+        console.log('AdminProjects: Extracted projects:', projects);
+        console.log('AdminProjects: Extracted count:', totalCount);
+        
         setState(prev => ({
           ...prev,
-          projects: data.items || [],
-          totalPages: data.totalPages || 1,
-          totalCount: data.totalCount || 0,
+          projects: projects,
+          totalPages: totalPages,
+          totalCount: totalCount,
           loading: false
         }));
         
-        console.log('AdminProjects: Updated state with', data.items?.length || 0, 'projects');
+        console.log('AdminProjects: Updated state with', projects.length, 'projects');
       } else {
         console.log('AdminProjects: API call failed:', response.message);
         setState(prev => ({

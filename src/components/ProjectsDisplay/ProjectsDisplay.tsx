@@ -4,6 +4,7 @@ import { ProjectService } from "../../services/ProjectService";
 import { IProjectSummary } from "../../interfaces/IProject";
 import { useAuth } from "../../context/AuthContext";
 import AddProject from "../AddProject/AddProject";
+import SearchProjects from "./SearchProjects";
 import "./ProjectsDisplay.css";
 import { PaginatedProjectGrid } from "@asafarim/paginated-project-grid";
 import { useTheme } from '@asafarim/react-themes';
@@ -190,15 +191,11 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
       </div>
 
       <div className="projects-filters">
-        <div className="filter-group">
-          <input
-            type="text"
-            placeholder="Search projects..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
-          />
-        </div>
+        <SearchProjects
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          placeholder="Search projects..."
+        />
 
         <div className="filter-group">
           <select
