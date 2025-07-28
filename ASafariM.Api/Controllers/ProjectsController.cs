@@ -1,11 +1,11 @@
+using System.Linq;
+using System.Security.Claims;
 using ASafariM.Api.Data;
 using ASafariM.Api.DTOs;
 using ASafariM.Api.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using System.Security.Claims;
 
 namespace ASafariM.Api.Controllers
 {
@@ -514,27 +514,43 @@ namespace ASafariM.Api.Controllers
                 {
                     foreach (var claim in User.Claims)
                     {
-                        _logger.LogInformation("Claim Type: {Type}, Value: {Value}", claim.Type, claim.Value);
+                        _logger.LogInformation(
+                            "Claim Type: {Type}, Value: {Value}",
+                            claim.Type,
+                            claim.Value
+                        );
                     }
                 }
                 _logger.LogInformation("=== END CLAIMS DEBUG ===");
-                
+
                 // Handle role claims (can be array in JWT) - try multiple claim types
                 var roleClaims = new List<string>();
-                
+
                 // Try different possible role claim types
-                var roleClaimTypes = new[] { "role", "roles", "http://schemas.microsoft.com/ws/2008/06/identity/claims/role", ClaimTypes.Role };
-                
+                var roleClaimTypes = new[]
+                {
+                    "role",
+                    "roles",
+                    "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
+                    ClaimTypes.Role,
+                };
+
                 foreach (var claimType in roleClaimTypes)
                 {
-                    var claims = User?.FindAll(claimType)?.Select(c => c.Value).ToList() ?? new List<string>();
+                    var claims =
+                        User?.FindAll(claimType)?.Select(c => c.Value).ToList()
+                        ?? new List<string>();
                     if (claims.Any())
                     {
-                        _logger.LogInformation("Found roles in claim type '{ClaimType}': {Roles}", claimType, string.Join(", ", claims));
+                        _logger.LogInformation(
+                            "Found roles in claim type '{ClaimType}': {Roles}",
+                            claimType,
+                            string.Join(", ", claims)
+                        );
                         roleClaims.AddRange(claims);
                     }
                 }
-                
+
                 var userRole = roleClaims.FirstOrDefault();
                 var isAdmin =
                     roleClaims.Contains("Admin")
@@ -693,19 +709,58 @@ namespace ASafariM.Api.Controllers
                 }
 
                 // Check if user owns the project OR is an admin
-                // Handle role claims (can be array in JWT)
-                var roleClaims =
-                    User?.FindAll("role")?.Select(c => c.Value).ToList() ?? new List<string>();
+                // Debug: Log all available claims
+                _logger.LogInformation("=== DELETE PROJECT - ALL JWT CLAIMS DEBUG ===");
+                if (User?.Claims != null)
+                {
+                    foreach (var claim in User.Claims)
+                    {
+                        _logger.LogInformation("Claim Type: {Type}, Value: {Value}", claim.Type, claim.Value);
+                    }
+                }
+                _logger.LogInformation("=== END DELETE CLAIMS DEBUG ===");
+                
+                // Handle role claims (can be array in JWT) - try multiple claim types
+                var roleClaims = new List<string>();
+                
+                // Try different possible role claim types
+                var roleClaimTypes = new[] { "role", "roles", "http://schemas.microsoft.com/ws/2008/06/identity/claims/role", ClaimTypes.Role };
+                
+                foreach (var claimType in roleClaimTypes)
+                {
+                    var claims = User?.FindAll(claimType)?.Select(c => c.Value).ToList() ?? new List<string>();
+                    if (claims.Any())
+                    {
+                        _logger.LogInformation("Found roles in claim type '{ClaimType}': {Roles}", claimType, string.Join(", ", claims));
+                        roleClaims.AddRange(claims);
+                    }
+                }
+                
                 var userRole = roleClaims.FirstOrDefault();
-                var isAdmin = roleClaims.Contains("Admin");
+                var isAdmin =
+                    roleClaims.Contains("Admin")
+                    || roleClaims.Contains("SuperAdmin")
+                    || roleClaims.Contains("admin")
+                    || roleClaims.Contains("superadmin");
 
+                _logger.LogInformation("Role Claims Found: {Roles}", string.Join(", ", roleClaims));
                 _logger.LogInformation(
-                    "DeleteProject Role Claims Found: {Roles}",
-                    string.Join(", ", roleClaims)
+                    "DeleteProject Permission Check - UserId: {UserId}, ProjectOwner: {ProjectOwner}, UserRole: {UserRole}, IsAdmin: {IsAdmin}",
+                    userGuid,
+                    project.UserId,
+                    userRole,
+                    isAdmin
                 );
 
                 if (project.UserId != userGuid && !isAdmin)
                 {
+                    _logger.LogWarning(
+                        "DeleteProject Access Denied - User {UserId} with role {UserRole} cannot delete project {ProjectId} owned by {ProjectOwner}",
+                        userGuid,
+                        userRole,
+                        project.Id,
+                        project.UserId
+                    );
                     return Forbid();
                 }
 
