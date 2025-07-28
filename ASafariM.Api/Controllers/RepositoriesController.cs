@@ -493,5 +493,180 @@ namespace ASafariM.Api.Controllers
                 );
             }
         }
+
+        // Admin-only endpoint to get all repositories with pagination
+        [HttpGet("admin/all")]
+        public async Task<ActionResult<PaginatedResponse<RepositoryDto>>> GetAllRepositoriesForAdmin(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] string? searchTerm = null,
+            [FromQuery] string? platform = null,
+            [FromQuery] string sortBy = "createdAt",
+            [FromQuery] string sortOrder = "desc"
+        )
+        {
+            try
+            {
+                var currentUserId =
+                    User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                    ?? User?.FindFirst("sub")?.Value
+                    ?? User?.FindFirst("id")?.Value;
+                if (
+                    string.IsNullOrEmpty(currentUserId)
+                    || !Guid.TryParse(currentUserId, out var currentUserGuid)
+                )
+                {
+                    return Unauthorized(
+                        ApiResponse<PaginatedResponse<RepositoryDto>>.ErrorResult("Invalid token.", statusCode: 401)
+                    );
+                }
+
+                // Handle role claims (can be array in JWT) - try multiple claim types
+                var roleClaims = new List<string>();
+
+                // Try different possible role claim types
+                var roleClaimTypes = new[]
+                {
+                    "role",
+                    "roles",
+                    "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
+                    ClaimTypes.Role,
+                };
+
+                foreach (var claimType in roleClaimTypes)
+                {
+                    var claims =
+                        User?.FindAll(claimType)?.Select(c => c.Value).ToList()
+                        ?? new List<string>();
+                    if (claims.Any())
+                    {
+                        _logger.LogInformation(
+                            "GetAllRepositoriesForAdmin - Found roles in claim type '{ClaimType}': {Roles}",
+                            claimType,
+                            string.Join(", ", claims)
+                        );
+                        roleClaims.AddRange(claims);
+                    }
+                }
+
+                var isAdmin =
+                    roleClaims.Contains("Admin")
+                    || roleClaims.Contains("SuperAdmin")
+                    || roleClaims.Contains("admin")
+                    || roleClaims.Contains("superadmin");
+
+                if (!isAdmin)
+                {
+                    _logger.LogWarning(
+                        "GetAllRepositoriesForAdmin Access Denied - User {CurrentUserId} is not an admin",
+                        currentUserGuid
+                    );
+                    return Forbid();
+                }
+
+                // Build query
+                var query = _context.Repositories
+                    .Include(r => r.User)
+                    .Where(r => r.IsActive && !r.IsDeleted)
+                    .AsQueryable();
+
+                // Apply search filter
+                if (!string.IsNullOrWhiteSpace(searchTerm))
+                {
+                    query = query.Where(r =>
+                        r.Name.Contains(searchTerm) ||
+                        (r.Description != null && r.Description.Contains(searchTerm)) ||
+                        (r.Language != null && r.Language.Contains(searchTerm)) ||
+                        r.Url.Contains(searchTerm)
+                    );
+                }
+
+                // Apply platform/language filter
+                if (!string.IsNullOrWhiteSpace(platform))
+                {
+                    query = query.Where(r => r.Language != null && r.Language == platform);
+                }
+
+                // Apply sorting
+                query = sortBy.ToLower() switch
+                {
+                    "name" => sortOrder.ToLower() == "asc" 
+                        ? query.OrderBy(r => r.Name) 
+                        : query.OrderByDescending(r => r.Name),
+                    "language" => sortOrder.ToLower() == "asc" 
+                        ? query.OrderBy(r => r.Language) 
+                        : query.OrderByDescending(r => r.Language),
+                    "stars" => sortOrder.ToLower() == "asc" 
+                        ? query.OrderBy(r => r.Stars) 
+                        : query.OrderByDescending(r => r.Stars),
+                    "forks" => sortOrder.ToLower() == "asc" 
+                        ? query.OrderBy(r => r.Forks) 
+                        : query.OrderByDescending(r => r.Forks),
+                    "createdat" or "created" => sortOrder.ToLower() == "asc" 
+                        ? query.OrderBy(r => r.CreatedAt) 
+                        : query.OrderByDescending(r => r.CreatedAt),
+                    _ => sortOrder.ToLower() == "asc" 
+                        ? query.OrderBy(r => r.CreatedAt) 
+                        : query.OrderByDescending(r => r.CreatedAt)
+                };
+
+                // Get total count for pagination
+                var totalCount = await query.CountAsync();
+                var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+                // Apply pagination and select
+                var repositories = await query
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(r => new RepositoryDto
+                    {
+                        Id = r.Id,
+                        Name = r.Name,
+                        Description = r.Description,
+                        Url = r.Url,
+                        Provider = r.Provider,
+                        IsPrivate = r.IsPrivate,
+                        Language = r.Language,
+                        Stars = r.Stars,
+                        Forks = r.Forks,
+                        Issues = r.Issues,
+                        LastCommitAt = r.LastCommitAt,
+                        License = r.License,
+                        Topics = r.Topics,
+                        IsFork = r.IsFork,
+                        IsArchived = r.IsArchived,
+                        Size = r.Size,
+                        CreatedAt = r.CreatedAt,
+                        UpdatedAt = r.UpdatedAt,
+                        UserId = r.UserId,
+                        UserUsername = r.User != null ? r.User.Username : string.Empty,
+                        ProjectId = r.ProjectId,
+                        ProjectTitle = r.Project != null ? r.Project.Title : string.Empty
+                    })
+                    .ToListAsync();
+
+                var response = PaginatedResponse<RepositoryDto>.SuccessResult(
+                    repositories,
+                    page,
+                    totalPages,
+                    totalCount,
+                    pageSize,
+                    "Repositories retrieved successfully for admin."
+                );
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while retrieving repositories for admin");
+                return StatusCode(
+                    500,
+                    ApiResponse<PaginatedResponse<RepositoryDto>>.ErrorResult(
+                        "An error occurred while retrieving repositories.",
+                        statusCode: 500
+                    )
+                );
+            }
+        }
     }
 }

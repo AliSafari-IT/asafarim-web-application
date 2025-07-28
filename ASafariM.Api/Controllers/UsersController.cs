@@ -631,6 +631,170 @@ namespace ASafariM.Api.Controllers
         }
 
         // Admin-only endpoints
+        [HttpGet("admin/all")]
+        public async Task<ActionResult<PaginatedResponse<UserDto>>> GetAllUsersForAdmin(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] string? searchTerm = null,
+            [FromQuery] string? role = null,
+            [FromQuery] string sortBy = "createdAt",
+            [FromQuery] string sortOrder = "desc"
+        )
+        {
+            try
+            {
+                var currentUserId =
+                    User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                    ?? User?.FindFirst("sub")?.Value
+                    ?? User?.FindFirst("id")?.Value;
+                if (
+                    string.IsNullOrEmpty(currentUserId)
+                    || !Guid.TryParse(currentUserId, out var currentUserGuid)
+                )
+                {
+                    return Unauthorized(
+                        ApiResponse<PaginatedResponse<UserDto>>.ErrorResult("Invalid token.", statusCode: 401)
+                    );
+                }
+
+                // Handle role claims (can be array in JWT) - try multiple claim types
+                var roleClaims = new List<string>();
+
+                // Try different possible role claim types
+                var roleClaimTypes = new[]
+                {
+                    "role",
+                    "roles",
+                    "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
+                    ClaimTypes.Role,
+                };
+
+                foreach (var claimType in roleClaimTypes)
+                {
+                    var claims =
+                        User?.FindAll(claimType)?.Select(c => c.Value).ToList()
+                        ?? new List<string>();
+                    if (claims.Any())
+                    {
+                        _logger.LogInformation(
+                            "GetAllUsersForAdmin - Found roles in claim type '{ClaimType}': {Roles}",
+                            claimType,
+                            string.Join(", ", claims)
+                        );
+                        roleClaims.AddRange(claims);
+                    }
+                }
+
+                var isAdmin =
+                    roleClaims.Contains("Admin")
+                    || roleClaims.Contains("SuperAdmin")
+                    || roleClaims.Contains("admin")
+                    || roleClaims.Contains("superadmin");
+
+                if (!isAdmin)
+                {
+                    _logger.LogWarning(
+                        "GetAllUsersForAdmin Access Denied - User {CurrentUserId} is not an admin",
+                        currentUserGuid
+                    );
+                    return Forbid();
+                }
+
+                // Build query
+                var query = _context.Users
+                    .Where(u => u.IsActive && !u.IsDeleted)
+                    .AsQueryable();
+
+                // Apply search filter
+                if (!string.IsNullOrWhiteSpace(searchTerm))
+                {
+                    query = query.Where(u =>
+                        u.Username.Contains(searchTerm) ||
+                        u.Email.Contains(searchTerm) ||
+                        (u.FirstName != null && u.FirstName.Contains(searchTerm)) ||
+                        (u.LastName != null && u.LastName.Contains(searchTerm))
+                    );
+                }
+
+                // Apply role filter
+                if (!string.IsNullOrWhiteSpace(role))
+                {
+                    query = query.Where(u => u.Role == role);
+                }
+
+                // Apply sorting
+                query = sortBy.ToLower() switch
+                {
+                    "username" => sortOrder.ToLower() == "asc" 
+                        ? query.OrderBy(u => u.Username) 
+                        : query.OrderByDescending(u => u.Username),
+                    "email" => sortOrder.ToLower() == "asc" 
+                        ? query.OrderBy(u => u.Email) 
+                        : query.OrderByDescending(u => u.Email),
+                    "role" => sortOrder.ToLower() == "asc" 
+                        ? query.OrderBy(u => u.Role) 
+                        : query.OrderByDescending(u => u.Role),
+                    "createdat" or "created" => sortOrder.ToLower() == "asc" 
+                        ? query.OrderBy(u => u.CreatedAt) 
+                        : query.OrderByDescending(u => u.CreatedAt),
+                    _ => sortOrder.ToLower() == "asc" 
+                        ? query.OrderBy(u => u.CreatedAt) 
+                        : query.OrderByDescending(u => u.CreatedAt)
+                };
+
+                // Get total count for pagination
+                var totalCount = await query.CountAsync();
+                var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+                // Apply pagination and select
+                var users = await query
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(u => new UserDto
+                    {
+                        Id = u.Id,
+                        Username = u.Username,
+                        Email = u.Email,
+                        FirstName = u.FirstName,
+                        LastName = u.LastName,
+                        Avatar = u.Avatar,
+                        Bio = u.Bio,
+                        Website = u.Website,
+                        Location = u.Location,
+                        Role = u.Role,
+                        IsEmailVerified = u.IsEmailVerified,
+                        EmailVerifiedAt = u.EmailVerifiedAt,
+                        LastLoginAt = u.LastLoginAt,
+                        CreatedAt = u.CreatedAt,
+                        UpdatedAt = u.UpdatedAt,
+                        IsActive = u.IsActive,
+                    })
+                    .ToListAsync();
+
+                var response = PaginatedResponse<UserDto>.SuccessResult(
+                    users,
+                    page,
+                    totalPages,
+                    totalCount,
+                    pageSize,
+                    "Users retrieved successfully for admin."
+                );
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while retrieving users for admin");
+                return StatusCode(
+                    500,
+                    ApiResponse<PaginatedResponse<UserDto>>.ErrorResult(
+                        "An error occurred while retrieving users.",
+                        statusCode: 500
+                    )
+                );
+            }
+        }
+
         [HttpPut("admin/{userId}/profile")]
         public async Task<ActionResult<ApiResponse<UserDto>>> AdminUpdateUserProfile(
             Guid userId,

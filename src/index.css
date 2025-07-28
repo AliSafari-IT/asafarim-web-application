@@ -41,6 +41,7 @@
   --danger-color-dark: #ef4444;
   --danger-bg-light: #fee;
   --danger-bg-dark: rgba(239, 68, 68, 0.1);
+
 }
 
 [data-theme="light"] {
@@ -63,6 +64,11 @@
   --primary-color-alpha: var(--primary-color-alpha-light);
   --danger-color: var(--danger-color-light);
   --danger-bg: var(--danger-bg-light);
+
+  --error-background: var(--error-color-dark);
+  --info-background: var(--info-color-dark);
+  --success-background: var(--success-color-dark);
+  --warning-background: var(--warning-color-dark);
 }
 
 [data-theme="dark"] {
@@ -85,4 +91,9 @@
   --primary-color-alpha: var(--primary-color-alpha-dark);
   --danger-color: var(--danger-color-dark);
   --danger-bg: var(--danger-bg-dark);
+
+  --error-background: var(--error-color-light);
+  --info-background: var(--info-color-light);
+  --success-background: var(--success-color-light);
+  --warning-background: var(--warning-color-light);
 }

@@ -24,6 +24,9 @@ import ProjectsDisplay from "./components/ProjectsDisplay/ProjectsDisplay";
 import AddProject from "./components/AddProject/AddProject";
 import ProjectDetails from "./components/ProjectDetails/ProjectDetails";
 import AdminProjects from "./pages/admin/AdminProjects";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminTechStacks from "./pages/admin/AdminTechStacks";
+import AdminRepositories from "./pages/admin/AdminRepositories";
 
 // Component to conditionally render content based on the current route
 const AppContent = () => {
@@ -126,6 +129,9 @@ const AppContent = () => {
       <Route path="/projects/:id" element={<ProjectDetails />} />
       <Route path="/projects/:id/edit" element={<AddProject />} />
       <Route path="/admin/projects" element={<AdminProjects />} />
+      <Route path="/admin/users" element={<AdminUsers />} />
+      <Route path="/admin/techstacks" element={<AdminTechStacks />} />
+      <Route path="/admin/repositories" element={<AdminRepositories />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

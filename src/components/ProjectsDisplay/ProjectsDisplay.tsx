@@ -4,10 +4,12 @@ import { ProjectService } from "../../services/ProjectService";
 import { IProjectSummary } from "../../interfaces/IProject";
 import { useAuth } from "../../context/AuthContext";
 import AddProject from "../AddProject/AddProject";
+import SearchItems from "../SearchItems";
 import "./ProjectsDisplay.css";
 import { PaginatedProjectGrid } from "@asafarim/paginated-project-grid";
-import { useTheme } from '@asafarim/react-themes';
+import { useTheme } from "@asafarim/react-themes";
 import { useNavigate } from "react-router-dom";
+import DDItems from "../DDItems";
 
 interface ProjectsDisplayProps {
   showUserProjectsOnly?: boolean;
@@ -29,7 +31,7 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [showAddProject, setShowAddProject] = useState(false);
 
-  const {currentTheme} = useTheme();
+  const { currentTheme } = useTheme();
 
   // Filters
   const [searchTerm, setSearchTerm] = useState("");
@@ -190,30 +192,26 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
       </div>
 
       <div className="projects-filters">
-        <div className="filter-group">
-          <input
-            type="text"
-            placeholder="Search projects..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
-          />
-        </div>
+        <SearchItems
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          placeholder="Search projects..."
+          searchType="minimal"
+        />
 
-        <div className="filter-group">
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="filter-select"
-          >
-            <option value="">All Statuses</option>
-            <option value="Planning">Planning</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Completed">Completed</option>
-            <option value="On Hold">On Hold</option>
-            <option value="Cancelled">Cancelled</option>
-          </select>
-        </div>
+        <DDItems
+          selectedValue={statusFilter}
+          onValueChange={setStatusFilter}
+          items={[
+            { value: "", label: "All Statuses" },
+            { value: "Planning", label: "Planning" },
+            { value: "In Progress", label: "In Progress" },
+            { value: "Completed", label: "Completed" },
+            { value: "On Hold", label: "On Hold" },
+            { value: "Cancelled", label: "Cancelled" },
+          ]}
+          dropdownType="minimal"
+        />
 
         {!showUserProjectsOnly && (
           <>
@@ -251,94 +249,125 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
       {/* Wrap PaginatedProjectGrid in error boundary */}
       {(() => {
         try {
-          const transformedProjects = (projects && Array.isArray(projects) ? projects : [])
-            ?.filter((p) => p && typeof p === 'object') // Filter out null/undefined projects
-            ?.map((p) => {
-            console.log('Transforming project:', p.id, p);
-            // Map status to expected enum values
-            let mappedStatus: "active" | "archived" | "in-progress" | undefined;
-            switch (p.status?.toLowerCase()) {
-              case "completed":
-                mappedStatus = "archived";
-                break;
-              case "in progress":
-              case "planning":
-                mappedStatus = "in-progress";
-                break;
-              case "active":
-                mappedStatus = "active";
-                break;
-              default:
-                mappedStatus = "in-progress";
-            }
+          const transformedProjects =
+            (projects && Array.isArray(projects) ? projects : [])
+              ?.filter((p) => p && typeof p === "object") // Filter out null/undefined projects
+              ?.map((p) => {
+                console.log("Transforming project:", p.id, p);
+                // Map status to expected enum values
+                let mappedStatus:
+                  | "active"
+                  | "archived"
+                  | "in-progress"
+                  | undefined;
+                switch (p.status?.toLowerCase()) {
+                  case "completed":
+                    mappedStatus = "archived";
+                    break;
+                  case "in progress":
+                  case "planning":
+                    mappedStatus = "in-progress";
+                    break;
+                  case "active":
+                    mappedStatus = "active";
+                    break;
+                  default:
+                    mappedStatus = "in-progress";
+                }
 
-            const transformedProject = {
-              id: p.id || '',
-              title: p.title || 'Untitled Project',
-              description: p.description || "",
-              status: mappedStatus,
-              priority: p.priority || 'Medium',
-              progress: typeof p.progress === 'number' ? p.progress : 0,
-              tags: Array.isArray(p.tags) ? p.tags : [],
-              thumbnailUrl: p.thumbnailUrl || '',
-              image: p.image || p.thumbnailUrl || "",
-              createdAt: p.createdAt || new Date().toISOString(),
-              updatedAt: p.updatedAt || new Date().toISOString(),
-              userId: p.userId || p.userUsername || '',
-              author: p.userUsername || 'Unknown Author',
-              isPublic: Boolean(p.isPublic),
-              isFeatured: Boolean(p.isFeatured),
-              featured: Boolean(p.isFeatured), // Alternative property name
-              isActive: Boolean(p.isActive),
-              isDeleted: Boolean(p.isDeleted),
-              repositoriesCount: typeof p.repositoriesCount === 'number' ? p.repositoriesCount : 0,
-              projectsCount: typeof p.projectsCount === 'number' ? p.projectsCount : 0,
-              lastUpdated: p.updatedAt || new Date().toISOString(),
-              // Use techStack (singular) as expected by ProjectCard component
-              techStack: Array.isArray(p.techStackIds) 
-                ? p.techStackIds.map((id) => ({
-                    name: (Array.isArray(p.techStacks) ? p.techStacks.find((ts) => ts.id === id)?.name : null) || "Unknown",
-                    icon: (Array.isArray(p.techStacks) ? p.techStacks.find((ts) => ts.id === id)?.icon : null) || "",
-                    color: (Array.isArray(p.techStacks) ? p.techStacks.find((ts) => ts.id === id)?.color : null) || "#666666",
-                  }))
-                : [],
-              // Also provide techStacks for compatibility
-              techStacks: Array.isArray(p.techStackIds) 
-                ? p.techStackIds.map((id) => ({
-                    id: id || '',
-                    name: (Array.isArray(p.techStacks) ? p.techStacks.find((ts) => ts.id === id)?.name : null) || "Unknown",
-                    icon: (Array.isArray(p.techStacks) ? p.techStacks.find((ts) => ts.id === id)?.icon : null) || "",
-                    color: (Array.isArray(p.techStacks) ? p.techStacks.find((ts) => ts.id === id)?.color : null) || "#666666",
-                  }))
-                : [],
-              links: [
-                ...(p.repositoryUrl
-                  ? [
-                      {
-                        type: "repo" as const,
-                        url: p.repositoryUrl,
-                        label: "Repository",
-                      },
-                    ]
-                  : []),
-                ...(p.liveUrl
-                  ? [
-                      {
-                        type: "demo" as const,
-                        url: p.liveUrl,
-                        label: "Live Demo",
-                      },
-                    ]
-                  : []),
-              ],
-            };
-            
-            console.log('Transformed project:', transformedProject.id, transformedProject);
-            return transformedProject;
-          }) || [];
+                const transformedProject = {
+                  id: p.id || "",
+                  title: p.title || "Untitled Project",
+                  description: p.description || "",
+                  status: mappedStatus,
+                  priority: p.priority || "Medium",
+                  progress: typeof p.progress === "number" ? p.progress : 0,
+                  tags: Array.isArray(p.tags) ? p.tags : [],
+                  thumbnailUrl: p.thumbnailUrl || "",
+                  image: p.image || p.thumbnailUrl || "",
+                  createdAt: p.createdAt || new Date().toISOString(),
+                  updatedAt: p.updatedAt || new Date().toISOString(),
+                  userId: p.userId || p.userUsername || "",
+                  author: p.userUsername || "Unknown Author",
+                  isPublic: Boolean(p.isPublic),
+                  isFeatured: Boolean(p.isFeatured),
+                  featured: Boolean(p.isFeatured), // Alternative property name
+                  isActive: Boolean(p.isActive),
+                  isDeleted: Boolean(p.isDeleted),
+                  repositoriesCount:
+                    typeof p.repositoriesCount === "number"
+                      ? p.repositoriesCount
+                      : 0,
+                  projectsCount:
+                    typeof p.projectsCount === "number" ? p.projectsCount : 0,
+                  lastUpdated: p.updatedAt || new Date().toISOString(),
+                  // Use techStack (singular) as expected by ProjectCard component
+                  techStack: Array.isArray(p.techStackIds)
+                    ? p.techStackIds.map((id) => ({
+                        name:
+                          (Array.isArray(p.techStacks)
+                            ? p.techStacks.find((ts) => ts.id === id)?.name
+                            : null) || "Unknown",
+                        icon:
+                          (Array.isArray(p.techStacks)
+                            ? p.techStacks.find((ts) => ts.id === id)?.icon
+                            : null) || "",
+                        color:
+                          (Array.isArray(p.techStacks)
+                            ? p.techStacks.find((ts) => ts.id === id)?.color
+                            : null) || "#666666",
+                      }))
+                    : [],
+                  // Also provide techStacks for compatibility
+                  techStacks: Array.isArray(p.techStackIds)
+                    ? p.techStackIds.map((id) => ({
+                        id: id || "",
+                        name:
+                          (Array.isArray(p.techStacks)
+                            ? p.techStacks.find((ts) => ts.id === id)?.name
+                            : null) || "Unknown",
+                        icon:
+                          (Array.isArray(p.techStacks)
+                            ? p.techStacks.find((ts) => ts.id === id)?.icon
+                            : null) || "",
+                        color:
+                          (Array.isArray(p.techStacks)
+                            ? p.techStacks.find((ts) => ts.id === id)?.color
+                            : null) || "#666666",
+                      }))
+                    : [],
+                  links: [
+                    ...(p.repositoryUrl
+                      ? [
+                          {
+                            type: "repo" as const,
+                            url: p.repositoryUrl,
+                            label: "Repository",
+                          },
+                        ]
+                      : []),
+                    ...(p.liveUrl
+                      ? [
+                          {
+                            type: "demo" as const,
+                            url: p.liveUrl,
+                            label: "Live Demo",
+                          },
+                        ]
+                      : []),
+                  ],
+                };
 
-          console.log('Final transformed projects array:', transformedProjects);
-          
+                console.log(
+                  "Transformed project:",
+                  transformedProject.id,
+                  transformedProject
+                );
+                return transformedProject;
+              }) || [];
+
+          console.log("Final transformed projects array:", transformedProjects);
+
           return (
             <PaginatedProjectGrid
               key={"asafarim-projects-grid"}
@@ -354,10 +383,11 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
             />
           );
         } catch (error) {
-          console.error('Error rendering PaginatedProjectGrid:', error);
+          console.error("Error rendering PaginatedProjectGrid:", error);
           return (
             <div className="error-message">
-              Error displaying projects grid. Please check the console for details.
+              Error displaying projects grid. Please check the console for
+              details.
             </div>
           );
         }
