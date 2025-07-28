@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Security.Claims;
 using ASafariM.Api.Data;
 using ASafariM.Api.DTOs;
@@ -100,7 +101,10 @@ namespace ASafariM.Api.Controllers
         {
             try
             {
-                var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var currentUserId =
+                    User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                    ?? User?.FindFirst("sub")?.Value
+                    ?? User?.FindFirst("id")?.Value;
                 if (
                     string.IsNullOrEmpty(currentUserId)
                     || !Guid.TryParse(currentUserId, out var currentUserGuid)
@@ -115,9 +119,55 @@ namespace ASafariM.Api.Controllers
                     );
                 }
 
-                // Users can only access their own preferences unless they're admin
-                if (currentUserGuid != userId)
+                // Handle role claims (can be array in JWT) - try multiple claim types
+                var roleClaims = new List<string>();
+
+                // Try different possible role claim types
+                var roleClaimTypes = new[]
                 {
+                    "role",
+                    "roles",
+                    "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
+                    ClaimTypes.Role,
+                };
+
+                foreach (var claimType in roleClaimTypes)
+                {
+                    var claims =
+                        User?.FindAll(claimType)?.Select(c => c.Value).ToList()
+                        ?? new List<string>();
+                    if (claims.Any())
+                    {
+                        _logger.LogInformation(
+                            "GetUserPreferences - Found roles in claim type '{ClaimType}': {Roles}",
+                            claimType,
+                            string.Join(", ", claims)
+                        );
+                        roleClaims.AddRange(claims);
+                    }
+                }
+
+                var isAdmin =
+                    roleClaims.Contains("Admin")
+                    || roleClaims.Contains("SuperAdmin")
+                    || roleClaims.Contains("admin")
+                    || roleClaims.Contains("superadmin");
+
+                _logger.LogInformation(
+                    "GetUserPreferences Permission Check - CurrentUserId: {CurrentUserId}, RequestedUserId: {RequestedUserId}, IsAdmin: {IsAdmin}",
+                    currentUserGuid,
+                    userId,
+                    isAdmin
+                );
+
+                // Users can only access their own preferences unless they're admin
+                if (currentUserGuid != userId && !isAdmin)
+                {
+                    _logger.LogWarning(
+                        "GetUserPreferences Access Denied - User {CurrentUserId} cannot access preferences for user {RequestedUserId}",
+                        currentUserGuid,
+                        userId
+                    );
                     return Forbid();
                 }
 

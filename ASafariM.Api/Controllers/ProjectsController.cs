@@ -715,27 +715,43 @@ namespace ASafariM.Api.Controllers
                 {
                     foreach (var claim in User.Claims)
                     {
-                        _logger.LogInformation("Claim Type: {Type}, Value: {Value}", claim.Type, claim.Value);
+                        _logger.LogInformation(
+                            "Claim Type: {Type}, Value: {Value}",
+                            claim.Type,
+                            claim.Value
+                        );
                     }
                 }
                 _logger.LogInformation("=== END DELETE CLAIMS DEBUG ===");
-                
+
                 // Handle role claims (can be array in JWT) - try multiple claim types
                 var roleClaims = new List<string>();
-                
+
                 // Try different possible role claim types
-                var roleClaimTypes = new[] { "role", "roles", "http://schemas.microsoft.com/ws/2008/06/identity/claims/role", ClaimTypes.Role };
-                
+                var roleClaimTypes = new[]
+                {
+                    "role",
+                    "roles",
+                    "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
+                    ClaimTypes.Role,
+                };
+
                 foreach (var claimType in roleClaimTypes)
                 {
-                    var claims = User?.FindAll(claimType)?.Select(c => c.Value).ToList() ?? new List<string>();
+                    var claims =
+                        User?.FindAll(claimType)?.Select(c => c.Value).ToList()
+                        ?? new List<string>();
                     if (claims.Any())
                     {
-                        _logger.LogInformation("Found roles in claim type '{ClaimType}': {Roles}", claimType, string.Join(", ", claims));
+                        _logger.LogInformation(
+                            "Found roles in claim type '{ClaimType}': {Roles}",
+                            claimType,
+                            string.Join(", ", claims)
+                        );
                         roleClaims.AddRange(claims);
                     }
                 }
-                
+
                 var userRole = roleClaims.FirstOrDefault();
                 var isAdmin =
                     roleClaims.Contains("Admin")

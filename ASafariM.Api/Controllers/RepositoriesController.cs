@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Security.Claims;
 using ASafariM.Api.Data;
 using ASafariM.Api.DTOs;
@@ -267,7 +268,10 @@ namespace ASafariM.Api.Controllers
                 }
 
                 // Check if user owns this repository or is admin
-                var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var currentUserId =
+                    User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                    ?? User?.FindFirst("sub")?.Value
+                    ?? User?.FindFirst("id")?.Value;
                 if (
                     string.IsNullOrEmpty(currentUserId)
                     || !Guid.TryParse(currentUserId, out var userGuid)
@@ -282,8 +286,55 @@ namespace ASafariM.Api.Controllers
                     );
                 }
 
-                if (existingRepository.UserId != userGuid)
+                // Handle role claims (can be array in JWT) - try multiple claim types
+                var roleClaims = new List<string>();
+
+                // Try different possible role claim types
+                var roleClaimTypes = new[]
                 {
+                    "role",
+                    "roles",
+                    "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
+                    ClaimTypes.Role,
+                };
+
+                foreach (var claimType in roleClaimTypes)
+                {
+                    var claims =
+                        User?.FindAll(claimType)?.Select(c => c.Value).ToList()
+                        ?? new List<string>();
+                    if (claims.Any())
+                    {
+                        _logger.LogInformation(
+                            "UpdateRepository - Found roles in claim type '{ClaimType}': {Roles}",
+                            claimType,
+                            string.Join(", ", claims)
+                        );
+                        roleClaims.AddRange(claims);
+                    }
+                }
+
+                var isAdmin =
+                    roleClaims.Contains("Admin")
+                    || roleClaims.Contains("SuperAdmin")
+                    || roleClaims.Contains("admin")
+                    || roleClaims.Contains("superadmin");
+
+                _logger.LogInformation(
+                    "UpdateRepository Permission Check - UserId: {UserId}, RepositoryOwner: {RepositoryOwner}, IsAdmin: {IsAdmin}",
+                    userGuid,
+                    existingRepository.UserId,
+                    isAdmin
+                );
+
+                if (existingRepository.UserId != userGuid && !isAdmin)
+                {
+                    _logger.LogWarning(
+                        "UpdateRepository Access Denied - User {UserId} cannot edit repository {RepositoryId} owned by {RepositoryOwner}",
+                        userGuid,
+                        existingRepository.Id,
+                        existingRepository.UserId
+                    );
                     return Forbid();
                 }
 
@@ -348,7 +399,10 @@ namespace ASafariM.Api.Controllers
                 }
 
                 // Check if user owns this repository or is admin
-                var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var currentUserId =
+                    User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                    ?? User?.FindFirst("sub")?.Value
+                    ?? User?.FindFirst("id")?.Value;
                 if (
                     string.IsNullOrEmpty(currentUserId)
                     || !Guid.TryParse(currentUserId, out var userGuid)
@@ -363,8 +417,55 @@ namespace ASafariM.Api.Controllers
                     );
                 }
 
-                if (repository.UserId != userGuid)
+                // Handle role claims (can be array in JWT) - try multiple claim types
+                var roleClaims = new List<string>();
+
+                // Try different possible role claim types
+                var roleClaimTypes = new[]
                 {
+                    "role",
+                    "roles",
+                    "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
+                    ClaimTypes.Role,
+                };
+
+                foreach (var claimType in roleClaimTypes)
+                {
+                    var claims =
+                        User?.FindAll(claimType)?.Select(c => c.Value).ToList()
+                        ?? new List<string>();
+                    if (claims.Any())
+                    {
+                        _logger.LogInformation(
+                            "DeleteRepository - Found roles in claim type '{ClaimType}': {Roles}",
+                            claimType,
+                            string.Join(", ", claims)
+                        );
+                        roleClaims.AddRange(claims);
+                    }
+                }
+
+                var isAdmin =
+                    roleClaims.Contains("Admin")
+                    || roleClaims.Contains("SuperAdmin")
+                    || roleClaims.Contains("admin")
+                    || roleClaims.Contains("superadmin");
+
+                _logger.LogInformation(
+                    "DeleteRepository Permission Check - UserId: {UserId}, RepositoryOwner: {RepositoryOwner}, IsAdmin: {IsAdmin}",
+                    userGuid,
+                    repository.UserId,
+                    isAdmin
+                );
+
+                if (repository.UserId != userGuid && !isAdmin)
+                {
+                    _logger.LogWarning(
+                        "DeleteRepository Access Denied - User {UserId} cannot delete repository {RepositoryId} owned by {RepositoryOwner}",
+                        userGuid,
+                        repository.Id,
+                        repository.UserId
+                    );
                     return Forbid();
                 }
 
