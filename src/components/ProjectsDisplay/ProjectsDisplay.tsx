@@ -5,6 +5,7 @@ import { IProjectSummary } from "../../interfaces/IProject";
 import { useAuth } from "../../context/AuthContext";
 import AddProject from "../AddProject/AddProject";
 import SearchProjects from "./SearchProjects";
+import ProjectStatus from "./ProjectStatus";
 import "./ProjectsDisplay.css";
 import { PaginatedProjectGrid } from "@asafarim/paginated-project-grid";
 import { useTheme } from '@asafarim/react-themes';
@@ -195,22 +196,14 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
           placeholder="Search projects..."
+          searchType="minimal"
         />
 
-        <div className="filter-group">
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="filter-select"
-          >
-            <option value="">All Statuses</option>
-            <option value="Planning">Planning</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Completed">Completed</option>
-            <option value="On Hold">On Hold</option>
-            <option value="Cancelled">Cancelled</option>
-          </select>
-        </div>
+        <ProjectStatus
+          statusFilter={statusFilter}
+          onStatusChange={setStatusFilter}
+          dropdownType="minimal"
+        />
 
         {!showUserProjectsOnly && (
           <>
