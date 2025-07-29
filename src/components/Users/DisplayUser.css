@@ -3,7 +3,6 @@
   padding: 20px;
   max-width: 900px;
   margin: 0 auto;
-  background: var(--card-bg);
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
@@ -94,6 +93,15 @@
   content: 'Not provided';
   color: var(--muted-color);
   font-style: italic;
+}
+
+.user-table-footer {
+  text-align: right;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 16px 0;
 }
 
 /* Responsive design */

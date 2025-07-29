@@ -3,6 +3,8 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import './DisplayUser.css';
+import ButtonComponent from '../Button/ButtonComponent';
+import { useNavigate } from 'react-router-dom';
 
 interface DisplayUserProps {
     // Add props here if needed
@@ -10,6 +12,7 @@ interface DisplayUserProps {
 
 const DisplayUser: React.FC<DisplayUserProps> = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
+  const navigate = useNavigate();
 
   // Get all fields programmatically from the user object
   // This will include all fields that exist in the user data
@@ -78,7 +81,26 @@ const DisplayUser: React.FC<DisplayUserProps> = () => {
             ))}
           </tbody>
         </table>
-      </div>
+       
+      </div> 
+      <div className="user-table-footer">
+        <ButtonComponent
+            label="Back"
+            onClick={() => navigate('/dashboard')}
+            variant="secondary"
+            icon="↩️"
+            iconPosition="right"
+            size="sm"
+          />
+          <ButtonComponent
+            label="Edit Profile"
+            onClick={() => navigate(`/users/${user.id}/edit`)}
+            variant="primary"
+            icon="✏️"
+            iconPosition="right"
+            size="sm"
+          />
+        </div>        
     </div>
   );
 };
