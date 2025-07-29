@@ -1,5 +1,6 @@
 using System.Text;
 using ASafariM.Api.Data;
+using ASafariM.Api.Models;
 using ASafariM.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -81,14 +82,40 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    
     try
     {
         context.Database.EnsureCreated();
+        
+        // Seed tech stacks if none exist
+        if (!context.TechStacks.Any())
+        {
+            logger.LogInformation("Seeding tech stacks...");
+            
+            var techStacks = new[]
+            {
+                new TechStack { Id = Guid.NewGuid(), Name = "React", Category = "Frontend", Description = "A JavaScript library for building user interfaces", IsActive = true, CreatedAt = DateTime.UtcNow },
+                new TechStack { Id = Guid.NewGuid(), Name = "TypeScript", Category = "Language", Description = "Typed superset of JavaScript", IsActive = true, CreatedAt = DateTime.UtcNow },
+                new TechStack { Id = Guid.NewGuid(), Name = "ASP.NET Core", Category = "Backend", Description = "Cross-platform web framework", IsActive = true, CreatedAt = DateTime.UtcNow },
+                new TechStack { Id = Guid.NewGuid(), Name = "Entity Framework", Category = "Database", Description = "Object-relational mapping framework", IsActive = true, CreatedAt = DateTime.UtcNow },
+                new TechStack { Id = Guid.NewGuid(), Name = "SQL Server", Category = "Database", Description = "Relational database management system", IsActive = true, CreatedAt = DateTime.UtcNow },
+                new TechStack { Id = Guid.NewGuid(), Name = "Node.js", Category = "Backend", Description = "JavaScript runtime environment", IsActive = true, CreatedAt = DateTime.UtcNow },
+                new TechStack { Id = Guid.NewGuid(), Name = "Python", Category = "Language", Description = "High-level programming language", IsActive = true, CreatedAt = DateTime.UtcNow },
+                new TechStack { Id = Guid.NewGuid(), Name = "Docker", Category = "DevOps", Description = "Containerization platform", IsActive = true, CreatedAt = DateTime.UtcNow },
+                new TechStack { Id = Guid.NewGuid(), Name = "Git", Category = "DevOps", Description = "Version control system", IsActive = true, CreatedAt = DateTime.UtcNow },
+                new TechStack { Id = Guid.NewGuid(), Name = "Redis", Category = "Database", Description = "In-memory data structure store", IsActive = true, CreatedAt = DateTime.UtcNow }
+            };
+            
+            context.TechStacks.AddRange(techStacks);
+            context.SaveChanges();
+            
+            logger.LogInformation($"Seeded {techStacks.Length} tech stacks successfully.");
+        }
     }
     catch (Exception ex)
     {
-        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while creating the database.");
+        logger.LogError(ex, "An error occurred while creating the database or seeding data.");
     }
 }
 

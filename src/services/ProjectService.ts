@@ -314,7 +314,7 @@ export class ProjectService {
    */
   static async getAdminProjects(
     page: number = 1,
-    pageSize: number = 20,
+    pageSize: number = 100,
     search?: string,
     status?: string,
     sortBy: string = 'createdAt',

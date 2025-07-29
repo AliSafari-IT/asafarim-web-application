@@ -18,6 +18,7 @@ interface ButtonComponentProps {
   style?: React.CSSProperties;
   className?: string;
   type?: "button" | "submit" | "reset";
+    [key: string]: any; // Allow additional props
 }
 
 const ButtonComponent: React.FC<ButtonComponentProps> = ({
@@ -36,6 +37,7 @@ const ButtonComponent: React.FC<ButtonComponentProps> = ({
   style = {},
   className = "",
   type = "button",
+  ...rest
 }) => {
   // Build the button classes dynamically
   const buttonClasses = [
@@ -69,6 +71,7 @@ const ButtonComponent: React.FC<ButtonComponentProps> = ({
       disabled={disabled || loading} 
       style={style}
       type={type}
+      {...rest}
     >
       {icon && iconPosition === "left"  && (
         <span >{icon}</span>
