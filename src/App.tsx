@@ -18,6 +18,9 @@ import MarkdownViewer from "./components/MarkdownViewer/MarkdownViewer";
 import Profile from "./components/Profile/Profile";
 import UserSettings from "./components/UserSettings/UserSettings";
 
+// Auth Components
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+
 // Styles
 import "./styles/settings.css";
 import ProjectsDisplay from "./components/ProjectsDisplay/ProjectsDisplay";
@@ -121,17 +124,17 @@ const AppContent = () => {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/profile" element={<Profile />} />
-      <Route path="/settings" element={<UserSettings />} />
-      <Route path="/projects" element={<ProjectsDisplay showUserProjectsOnly={true} showAddButton={true} />} />
-      <Route path="/projects/new" element={<AddProject />} />
+      <Route path="/dashboard" element={<ProtectedRoute ><Dashboard /></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+      <Route path="/settings" element={<ProtectedRoute><UserSettings /></ProtectedRoute>} />
+      <Route path="/projects" element={<ProtectedRoute><ProjectsDisplay showUserProjectsOnly={true} showAddButton={true} /></ProtectedRoute>} />
+      <Route path="/projects/new" element={<ProtectedRoute><AddProject /></ProtectedRoute>} />
       <Route path="/projects/:id" element={<ProjectDetails />} />
-      <Route path="/projects/:id/edit" element={<AddProject />} />
-      <Route path="/admin/projects" element={<AdminProjects />} />
-      <Route path="/admin/users" element={<AdminUsers />} />
-      <Route path="/admin/techstacks" element={<AdminTechStacks />} />
-      <Route path="/admin/repositories" element={<AdminRepositories />} />
+      <Route path="/projects/:id/edit" element={<ProtectedRoute><AddProject /></ProtectedRoute>} />
+      <Route path="/admin/projects" element={<ProtectedRoute requiredRole="Admin"><AdminProjects /></ProtectedRoute>} />
+      <Route path="/admin/users" element={<ProtectedRoute requiredRole="Admin"><AdminUsers /></ProtectedRoute>} />
+      <Route path="/admin/techstacks" element={<ProtectedRoute requiredRole="Admin"><AdminTechStacks /></ProtectedRoute>} />
+      <Route path="/admin/repositories" element={<ProtectedRoute requiredRole="Admin"><AdminRepositories /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
