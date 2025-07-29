@@ -1,7 +1,11 @@
 import { useAuth } from '../../context/AuthContext';
 import { Navigate } from 'react-router-dom';
 
-const Profile = () => {
+interface UserProfileProps {
+  // Add props here
+}
+
+const UserProfile: React.FC<UserProfileProps> = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
@@ -112,4 +116,4 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default UserProfile;

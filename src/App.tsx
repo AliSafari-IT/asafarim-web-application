@@ -6,6 +6,7 @@ import {
   useLocation,
 } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import { NotificationProvider } from "./context/NotificationContext";
 import { Suspense } from "react";
 
 // Layout
@@ -15,11 +16,12 @@ import Layout from "./components/layout/Layout";
 import Home from "./components/Home/Home";
 import Dashboard from "./components/Dashboard/Dashboard";
 import MarkdownViewer from "./components/MarkdownViewer/MarkdownViewer";
-import Profile from "./components/Profile/Profile";
-import UserSettings from "./components/UserSettings/UserSettings";
+import UserProfile from "./components/Users/UserProfile";
+import UserSettings from "./components/Users/UserSettings";
 
 // Auth Components
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import NotificationDisplay from "./components/notifications/NotificationDisplay";
 
 // Styles
 import "./styles/settings.css";
@@ -30,6 +32,8 @@ import AdminProjects from "./pages/admin/AdminProjects";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminTechStacks from "./pages/admin/AdminTechStacks";
 import AdminRepositories from "./pages/admin/AdminRepositories";
+import DisplayUser from "./components/Users/DisplayUser";
+import EditUser from "./components/Users/EditUser";
 
 // Component to conditionally render content based on the current route
 const AppContent = () => {
@@ -125,7 +129,11 @@ const AppContent = () => {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/dashboard" element={<ProtectedRoute ><Dashboard /></ProtectedRoute>} />
-      <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+      {/* Users routes */}
+      <Route path="/users/:id/edit" element={<ProtectedRoute><EditUser /></ProtectedRoute>} />
+      <Route path="/users/:id" element={<ProtectedRoute><DisplayUser /></ProtectedRoute>} />
+
       <Route path="/settings" element={<ProtectedRoute><UserSettings /></ProtectedRoute>} />
       <Route path="/projects" element={<ProtectedRoute><ProjectsDisplay showUserProjectsOnly={true} showAddButton={true} /></ProtectedRoute>} />
       <Route path="/projects/new" element={<ProtectedRoute><AddProject /></ProtectedRoute>} />
@@ -149,15 +157,18 @@ function App() {
 
   return (
       <AuthProvider>
-        <div className="app">
-          <BrowserRouter basename={basename}>
-            <Layout>
-              <Suspense fallback={<div>Loading...</div>}>
-                <AppContent />
-              </Suspense>
-            </Layout>
-          </BrowserRouter>
-        </div>
+        <NotificationProvider>
+          <div className="app">
+            <BrowserRouter basename={basename}>
+              <Layout>
+                <Suspense fallback={<div>Loading...</div>}>
+                  <AppContent />
+                </Suspense>
+                <NotificationDisplay />
+              </Layout>
+            </BrowserRouter>
+          </div>
+        </NotificationProvider>
       </AuthProvider>
   );
 }

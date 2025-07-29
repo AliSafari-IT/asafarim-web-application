@@ -1,8 +1,43 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useTheme } from '@asafarim/react-themes';
+import { useNotification } from '../../context/NotificationContext';
+import { useEffect, useRef } from 'react';
 
 const Home = () => {
   const { mode } = useTheme();
+  const location = useLocation();
+  const { addNotification } = useNotification();
+  const notificationShown = useRef(false);
+  
+  // Check if user was redirected here from a protected route
+  useEffect(() => {
+    const state = location.state as { from?: Location; showLogin?: boolean } | null;
+    if (state?.showLogin && state?.from && !notificationShown.current) {
+      const attemptedPath = state.from.pathname;
+      addNotification({
+        type: 'warning',
+        message: `Please log in to access ${attemptedPath}`,
+        duration: 8000,
+        action: {
+          label: 'Log In',
+          onClick: () => {
+            // You can trigger the login modal here
+            // For now, just log to console
+            console.log('Trigger login modal for path:', attemptedPath);
+          }
+        }
+      });
+      notificationShown.current = true;
+    }
+  }, [location.state, addNotification]);
+
+  // Reset notification flag when location changes (without state)
+  useEffect(() => {
+    const state = location.state as { from?: Location; showLogin?: boolean } | null;
+    if (!state?.showLogin) {
+      notificationShown.current = false;
+    }
+  }, [location.pathname]);
   
   return (
     <div className={`home-container ${mode}`}>
