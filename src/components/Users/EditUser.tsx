@@ -5,6 +5,7 @@ import { useAuth, User } from "../../context/AuthContext";
 import { useNotification } from "../../context/NotificationContext";
 import DDItems from "../DDItems";
 import "./EditUser.css";
+import ButtonComponent from "../Button/ButtonComponent";
 
 const EditUser: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -314,16 +315,23 @@ const EditUser: React.FC = () => {
         </div>
 
         <div className="form-actions">
-          <button type="submit" className="btn-primary">
-            Update User
-          </button>
-          <button 
-            type="button" 
+            <ButtonComponent
+              type="submit"
+              variant="success"
+              label="Update User"
+              icon="💾"
+              size="sm"
+              iconPosition="right"
+            />
+          <ButtonComponent
+            type="button"
             onClick={() => navigate(-1)}
-            className="btn-secondary"
-          >
-            Cancel
-          </button>
+            variant="warning"
+            label="Cancel"
+            icon="❌"
+            size="sm"
+            iconPosition="right"
+          />
         </div>
       </form>
     </div>
