@@ -17,6 +17,9 @@ importers:
       '@asafarim/react-themes':
         specifier: ^1.5.0
         version: 1.5.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@asafarim/shared':
+        specifier: ^1.2.1
+        version: 1.2.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       cors:
         specifier: ^2.8.5
         version: 2.8.5
@@ -107,6 +110,12 @@ packages:
     peerDependencies:
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
+
+  '@asafarim/shared@1.2.1':
+    resolution: {integrity: sha512-x48rV+Nu4lwAxuXEp78Q2MHH0wvRh+RUDZq3kF20MG2Sj6Px/Lr7L2zjkvU4TTSAfs0mRLtzl9IRfBEoii6xsg==}
+    peerDependencies:
+      react: ^18.2.0
+      react-dom: ^18.2.0
 
   '@babel/code-frame@7.27.1':
     resolution: {integrity: sha512-cjQ7ZlQ0Mv3b47hABuTevyTuYN4i+loJKGeV9flcCgIK37cCXRh+L1bd3iBHlynerhQ7BhCkn2BPbQUL+rGqFg==}
@@ -1682,6 +1691,11 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
 
   '@asafarim/react-themes@1.5.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+    dependencies:
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+
+  '@asafarim/shared@1.2.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)

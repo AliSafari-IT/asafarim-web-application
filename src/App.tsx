@@ -16,8 +16,8 @@ import Layout from "./components/layout/Layout";
 import Home from "./components/Home/Home";
 import Dashboard from "./components/Dashboard/Dashboard";
 import MarkdownViewer from "./components/MarkdownViewer/MarkdownViewer";
-import UserProfile from "./components/Users/UserProfile";
-import UserSettings from "./components/Users/UserSettings";
+import UserProfile from "./components/User/UserProfile";
+import UserSettings from "./components/User/UserSettings";
 
 // Auth Components
 import ProtectedRoute from "./components/auth/ProtectedRoute";
@@ -32,8 +32,8 @@ import AdminProjects from "./pages/admin/AdminProjects";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminTechStacks from "./pages/admin/AdminTechStacks";
 import AdminRepositories from "./pages/admin/AdminRepositories";
-import DisplayUser from "./components/Users/DisplayUser";
-import EditUser from "./components/Users/EditUser";
+import {DisplayUser} from "./components/User";
+import EditUser from "./components/User/EditUser";
 
 // Component to conditionally render content based on the current route
 const AppContent = () => {

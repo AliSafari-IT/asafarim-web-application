@@ -24,6 +24,7 @@
     "@asafarim/complete-md-viewer": "^1.1.1",
     "@asafarim/paginated-project-grid": "^1.0.4",
     "@asafarim/react-themes": "^1.5.0",
+    "@asafarim/shared": "^1.2.1",
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "react": "^18.2.0",

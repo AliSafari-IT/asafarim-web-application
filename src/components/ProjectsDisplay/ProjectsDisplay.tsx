@@ -4,12 +4,11 @@ import { ProjectService } from "../../services/ProjectService";
 import { IProjectSummary } from "../../interfaces/IProject";
 import { useAuth } from "../../context/AuthContext";
 import AddProject from "../AddProject/AddProject";
-import SearchItems from "../SearchItems";
+import {SearchItems, DDItems} from "@asafarim/shared";
 import "./ProjectsDisplay.css";
 import { PaginatedProjectGrid } from "@asafarim/paginated-project-grid";
 import { useTheme } from "@asafarim/react-themes";
 import { useNavigate } from "react-router-dom";
-import DDItems from "../DDItems";
 
 interface ProjectsDisplayProps {
   showUserProjectsOnly?: boolean;

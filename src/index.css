@@ -1,6 +1,17 @@
 @import '@asafarim/complete-md-viewer/dist/style.css';
 @import './styles/auth.css';
 
+/* Global overflow fix to prevent horizontal scrollbars */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 /* Base styles */
 :root {
   --primary-color-light: #3498db;

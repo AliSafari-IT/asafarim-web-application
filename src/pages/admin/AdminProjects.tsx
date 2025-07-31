@@ -5,9 +5,7 @@ import { ProjectService } from '../../services/ProjectService';
 import { IProjectSummary } from '../../interfaces/IProject';
 import './AdminProjects.css';
 import AdminHeader from '../../components/AdminHeader';
-import SearchItems from '../../components/SearchItems';
-import DDItems from '../../components/DDItems';
-import ButtonComponent from '../../components/Button/ButtonComponent';
+import { ButtonComponent, DDItems, SearchItems } from '@asafarim/shared'; 
 
 interface AdminProjectsState {
   projects: IProjectSummary[];
@@ -351,7 +349,6 @@ const AdminProjects: React.FC = () => {
             ]}
             placeholder="Sort by..."
             dropdownType="compact"
-            className="filter-select"
           />
 
         </div>
@@ -502,8 +499,7 @@ const AdminProjects: React.FC = () => {
                 <div className="actions-cell table-cell">
                   <ButtonComponent
                     onClick={() => navigate(`/projects/${project.id}/edit`)}
-                    variant="ghost"
-                    size="xs"
+                    variant="primary"
                     iconPosition="only"
                     icon={
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -512,6 +508,7 @@ const AdminProjects: React.FC = () => {
                     }
                     outline='info'
                     title="Edit Project"
+                    label='Edit'
                   />
                   <ButtonComponent
                     onClick={() => handleDeleteProject(project.id, project.title)}

@@ -1,6 +1,5 @@
 import { useAuth } from '../../context/AuthContext';
-import { Navigate, useNavigate } from 'react-router-dom';
-import ButtonComponent from '../Button/ButtonComponent';
+import { Navigate } from 'react-router-dom';
 
 interface UserProfileProps {
   // Add props here
@@ -8,7 +7,6 @@ interface UserProfileProps {
 
 const UserProfile: React.FC<UserProfileProps> = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
-  const navigate = useNavigate();
 
   if (isLoading) {
     return (
@@ -53,30 +51,6 @@ const UserProfile: React.FC<UserProfileProps> = () => {
               <span className="status-badge unverified">Email not verified</span>
             </div>
           )}
-        </div>
-      </div>
-
-      {/* Action Buttons Section */}
-      <div className="profile-actions">
-        <div className="action-buttons-container">
-          <ButtonComponent
-            label="View Detailed Profile"
-            onClick={() => navigate(`/users/${user.id}`)}
-            variant="info"
-            key={user.id + '-view'}
-            icon="👁️"
-            iconPosition="right"
-            size='sm'
-          />
-          <ButtonComponent
-            label="Edit Profile"
-            onClick={() => navigate(`/users/${user.id}/edit`)}
-            variant="primary"
-            key={user.id + '-edit'}
-            icon="✏️"
-            iconPosition="right"
-            size='sm'
-          />
         </div>
       </div>
 
