@@ -5,7 +5,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useNotification } from "../../context/NotificationContext";
 import { fetchUserDetails, updateUser } from "../../services/UserService";
 import { IUser } from "../../interfaces/IUser";
-import { ButtonComponent } from "@asafarim/shared";
+import { ButtonComponent, InputFields } from "@asafarim/shared";
 import "./EditUser.css";
 
 const EditUser: React.FC = () => {
@@ -19,27 +19,33 @@ const EditUser: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
+  const isAdminUser = user?.role === "Admin";
   // Define which fields are editable
   const editableFields: (keyof IUser)[] = [
     "username",
     "firstName",
     "lastName",
-    "email",
     "bio",
     "website",
     "location",
     "avatar",
   ];
+  // Only admins can edit email, role, and isActive status
+  if (isAdminUser) {
+    editableFields.push("role", "email");
+  }
 
   // Define which fields are read-only but should be displayed
   const readOnlyFields: (keyof IUser)[] = [
     "id",
-    "role",
-    "isActive",
     "isEmailVerified",
     "createdAt",
-    "updatedAt",
+    "updatedAt", "isActive",
   ];
+  // Non-admins cannot edit email, role, and isActive status, show as read-only
+  if (!isAdminUser) {
+    readOnlyFields.push("email", "role");
+  }
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -63,13 +69,13 @@ const EditUser: React.FC = () => {
     fetchUser();
   }, [id, isAuthenticated, navigate]);
 
-  const handleInputChange = (field: keyof IUser, value: string) => {
-    if (userDetails) {
-      setUserDetails({
-        ...userDetails,
-        [field]: value,
-      });
-    }
+  const handleInputChange = (field: keyof IUser, value: string | boolean) => {
+    // Update the userDetails state with the new value for the specified field
+    if (!userDetails) return;
+    setUserDetails({
+      ...userDetails,
+      [field]: value,
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -84,17 +90,17 @@ const EditUser: React.FC = () => {
 
       await updateUser(id!, userDetails, isAdmin, currentUserId);
 
-      // Refresh the user data to get the latest from the server
-      const refreshedData = await fetchUserDetails(id!);
-      setUserDetails(refreshedData);
-      navigate(`/users/${id}`);
-
       addNotification({
         type: "success",
         message: "User updated successfully",
       });
-      // Stay on the edit page instead of navigating away
-      // The user can manually navigate if they want to view the profile
+
+      // Refresh the user data to get the latest from the server
+      const refreshedData = await fetchUserDetails(id!);
+      setUserDetails(refreshedData);
+
+      // Navigate after refreshing the data
+      navigate(`/users/${id}`);
     } catch (err) {
       addNotification({
         type: "error",
@@ -143,43 +149,56 @@ const EditUser: React.FC = () => {
     switch (field) {
       case "email":
         return (
-          <input
-            type="email"
+          <InputFields.Email
             value={fieldValue}
-            onChange={(e) => handleInputChange(field, e.target.value)}
-            className="field-input"
-            required
+            onChange={(val: string) => handleInputChange(field, val)}
+            key={field + "_email"}
           />
         );
       case "website":
         return (
-          <input
-            type="url"
-            value={fieldValue}
-            onChange={(e) => handleInputChange(field, e.target.value)}
-            className="field-input"
+          <InputFields.Url
             placeholder="https://example.com"
+            value={fieldValue}
+            onChange={(val: string) => handleInputChange(field, val)}
+            key={field + "_website"}
           />
         );
       case "bio":
         return (
-          <textarea
+          <InputFields.Textarea
+            name="bio"
             value={fieldValue}
-            onChange={(e) => handleInputChange(field, e.target.value)}
-            className="field-textarea"
+            onChange={(val: string) => handleInputChange(field, val)}
             rows={3}
             placeholder="Tell us about yourself..."
           />
         );
+      case "role":
+        return (
+          <InputFields.Select
+            name="role"
+            onChange={(val: string) => handleInputChange(field, val)}
+            value={fieldValue}
+            className="field-select"
+            key={field + "_role"}
+            options={[
+              { value: "User", label: "User" },
+              { value: "Admin", label: "Admin" },
+              { value: "Moderator", label: "Moderator" },
+              { value: "Guest", label: "Guest" },
+            ]}
+          />
+        );
+     
       default:
         return (
-          <input
-            type="text"
+          <InputFields.Text
+            name={field}
             value={fieldValue}
-            onChange={(e) => handleInputChange(field, e.target.value)}
-            className="field-input"
+            onChange={(val: string) => handleInputChange(field, val)}
             required={
-              field === "username" ||
+              field === "username"  ||
               field === "firstName" ||
               field === "lastName"
             }

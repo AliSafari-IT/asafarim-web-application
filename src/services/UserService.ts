@@ -95,10 +95,15 @@ export class UserService {
   static async getUser(id: string): Promise<IApiResponse<IUser>> {
     try {
       // Since there's no direct user-by-id endpoint, we'll use the admin/all endpoint
-      // and filter for the specific user
-      const response = await fetch(`${API_BASE_URL}/users/admin/all?pageSize=1000`, {
+      // and filter for the specific user. Add timestamp to prevent caching.
+      const timestamp = new Date().getTime();
+      const response = await fetch(`${API_BASE_URL}/users/admin/all?pageSize=1000&_t=${timestamp}`, {
         method: 'GET',
-        headers: getAuthHeaders()
+        headers: {
+          ...getAuthHeaders(),
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
       });
 
       const result = await handleResponse<any>(response);

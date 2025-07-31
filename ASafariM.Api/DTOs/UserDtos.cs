@@ -82,6 +82,13 @@ namespace ASafariM.Api.DTOs
 
     public class UpdateUserProfileDto
     {
+        [EmailAddress]
+        [StringLength(255)]
+        public string? Email { get; set; }
+
+        [StringLength(30)]
+        public string? Role { get; set; }
+
         [StringLength(100)]
         public string? FirstName { get; set; }
 
@@ -99,6 +106,8 @@ namespace ASafariM.Api.DTOs
 
         [StringLength(255)]
         public string? Avatar { get; set; }
+
+        public bool? IsActive { get; set; }
     }
 
     // User Preferences DTOs

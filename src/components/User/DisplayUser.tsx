@@ -29,6 +29,7 @@ const DisplayUser: React.FC<DisplayUserProps> = () => {
 
     const fetchUser = async () => {
       try {
+        setLoading(true); // Force loading state on each fetch
         if (id) {
           // Fetch user by ID from URL parameter
           const data = await fetchUserDetails(id);

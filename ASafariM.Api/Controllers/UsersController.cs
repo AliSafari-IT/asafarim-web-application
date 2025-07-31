@@ -214,6 +214,15 @@ namespace ASafariM.Api.Controllers
                 if (updateProfileDto.Avatar != null)
                     user.Avatar = updateProfileDto.Avatar;
 
+                if (updateProfileDto.Email != null)
+                    user.Email = updateProfileDto.Email;
+
+                if (updateProfileDto.Role != null)
+                    user.Role = updateProfileDto.Role;
+
+                if (updateProfileDto.IsActive.HasValue)
+                    user.IsActive = updateProfileDto.IsActive.Value;
+
                 await _context.SaveChangesAsync();
 
                 var userDto = new UserDto
@@ -905,6 +914,15 @@ namespace ASafariM.Api.Controllers
 
                 if (updateProfileDto.Avatar != null)
                     user.Avatar = updateProfileDto.Avatar;
+
+                if (updateProfileDto.Email != null)
+                    user.Email = updateProfileDto.Email;
+
+                if (updateProfileDto.Role != null)
+                    user.Role = updateProfileDto.Role;
+
+                if (updateProfileDto.IsActive.HasValue)
+                    user.IsActive = updateProfileDto.IsActive.Value;
 
                 user.UpdatedAt = DateTime.UtcNow;
                 await _context.SaveChangesAsync();

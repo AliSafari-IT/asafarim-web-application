@@ -5,6 +5,7 @@ import { TechStackService } from "../../services/TechStackService";
 import { ITechStack } from "../../interfaces/ITechStack";
 import AdminHeader from "../../components/AdminHeader";
 import "./AdminTechStacks.css";
+import { DDItems, SearchItems } from "@asafarim/shared";
 
 interface AdminTechStacksState {
   techStacks: ITechStack[];
@@ -422,27 +423,29 @@ const AdminTechStacks: React.FC = () => {
 
       <div className="admin-controls">
         <div className="search-controls">
-          <input
-            type="text"
+          <SearchItems
+            searchTerm={state.searchTerm}
+            onSearchChange={handleSearch}
             placeholder="Search tech stacks..."
-            value={state.searchTerm}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="search-input"
+            searchType="minimal"
           />
-
-          <select
-            value={state.categoryFilter}
-            onChange={(e) => handleCategoryFilter(e.target.value)}
-            className="filter-select"
-          >
-            <option value="">All Categories</option>
-            <option value="Frontend">Frontend</option>
-            <option value="Backend">Backend</option>
-            <option value="Database">Database</option>
-            <option value="DevOps">DevOps</option>
-            <option value="Mobile">Mobile</option>
-            <option value="Other">Other</option>
-          </select>
+          <DDItems
+            items={[
+              { value: "Frontend", label: "Frontend" },
+              { value: "Backend", label: "Backend" },
+              { value: "Database", label: "Database" },
+              { value: "DevOps", label: "DevOps" },
+              { value: "Mobile", label: "Mobile" },
+              { value: "Language", label: "Language" },
+              { value: "Framework", label: "Framework" },
+              { value: "Library", label: "Library" },
+              { value: "Tool", label: "Tool" },
+              { value: "Cloud", label: "Cloud" },
+            ]}
+            selectedValue={state.categoryFilter}
+            onValueChange={handleCategoryFilter}
+            placeholder="All Categories"
+          />
         </div>
 
         <div className="action-controls">

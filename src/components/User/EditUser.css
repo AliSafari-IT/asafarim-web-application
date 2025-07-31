@@ -204,6 +204,26 @@
   box-sizing: border-box;
 }
 
+/* Checkbox field styling */
+.field-checkbox {
+  width: auto;
+  height: auto;
+  margin: 0.5em 0;
+  transform: scale(1.2);
+  accent-color: var(--primary-color);
+}
+/* Override table cell clipping for checkbox */
+.field-value {
+  /* ensure cell can accommodate inputs */
+  max-width: none;
+}
+/* For checkbox specifically, ensure visibility */
+.field-value .field-checkbox {
+  overflow: visible;
+  max-width: none;
+}
+
+
 /* Loading and error states */
 .loading-spinner {
   display: flex;
