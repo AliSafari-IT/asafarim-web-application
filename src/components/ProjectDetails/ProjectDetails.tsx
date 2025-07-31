@@ -260,10 +260,10 @@ const ProjectDetails: React.FC = () => {
                 </div>
               )}
               
-              {project.techStackName && (
+              {project.techStacks && project.techStacks.length > 0 && (
                 <div className="detail-item">
-                  <label>Tech Stack</label>
-                  <span>{project.techStackName}</span>
+                  <label>Tech Stack{project.techStacks.length > 1 ? 's' : ''}</label>
+                  <span>{project.techStacks.map(ts => ts.name).join(', ')}</span>
                 </div>
               )}
             </div>

@@ -25,6 +25,8 @@ const TechStackMultiSelect: React.FC<TechStackMultiSelectProps> = ({
   };
 
   const handleSelectAll = () => {
+    if (!Array.isArray(techStacks)) return;
+    
     if (selectedTechStackIds.length === techStacks.length) {
       onChange([]);
     } else {
@@ -49,7 +51,7 @@ const TechStackMultiSelect: React.FC<TechStackMultiSelectProps> = ({
           <label className="checkbox-label">
             <input
               type="checkbox"
-              checked={selectedTechStackIds.length === techStacks.length && techStacks.length > 0}
+              checked={Array.isArray(techStacks) && selectedTechStackIds.length === techStacks.length && techStacks.length > 0}
               onChange={handleSelectAll}
             />
             <span className="checkmark"></span>
@@ -58,7 +60,7 @@ const TechStackMultiSelect: React.FC<TechStackMultiSelectProps> = ({
         </div>
         
         <div className="tech-stack-options">
-          {techStacks.map((techStack) => (
+          {Array.isArray(techStacks) && techStacks.map((techStack) => (
             <label key={techStack.id} className="checkbox-label tech-stack-option">
               <input
                 type="checkbox"

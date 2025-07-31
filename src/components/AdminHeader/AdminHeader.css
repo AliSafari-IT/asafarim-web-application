@@ -14,10 +14,11 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 1rem;
+  color: var(--text-secondary);
 }
 
 .admin-header h1 {
-  color: var(--text-primary);
+  color: var(--info-color);
   margin: 0;
   font-size: 2rem;
   font-weight: 600;

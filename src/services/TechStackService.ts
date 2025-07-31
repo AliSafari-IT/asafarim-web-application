@@ -64,21 +64,33 @@ export class TechStackService {
     sortOrder: 'asc' | 'desc' = 'desc'
   ): Promise<IApiResponse<any>> {
     try {
+      console.log('TechStackService: Making API call to:', `${API_BASE_URL}/techstacks`);
+      
       // Backend doesn't support pagination/filtering, so we'll get all and handle client-side
       const response = await fetch(`${API_BASE_URL}/techstacks`, {
         method: 'GET',
         headers: getAuthHeaders()
       });
 
+      console.log('TechStackService: API response status:', response.status);
+      console.log('TechStackService: API response ok:', response.ok);
+
       const result = await handleResponse<ITechStack[]>(response);
       
+      console.log('TechStackService: Processed result:', result);
+      
       if (!result.success) {
+        console.log('TechStackService: API call failed:', result.message);
         return result;
       }
 
       // The backend returns data in the format { success: true, data: ITechStack[], message: string }
       // So result.data should contain the array of tech stacks
       const techStacks = result.data || [];
+      
+      console.log('TechStackService: Extracted techStacks:', techStacks);
+      console.log('TechStackService: TechStacks count:', techStacks.length);
+      console.log('TechStackService: TechStacks is array:', Array.isArray(techStacks));
 
       // Client-side filtering
       let filteredStacks = techStacks;

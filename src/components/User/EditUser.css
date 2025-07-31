@@ -1,0 +1,315 @@
+/* User Edit Form Styles - Using ASafariM Design System */
+
+.user-edit {
+  padding: 20px;
+  max-width: 900px;
+  margin: 0 auto;
+  background: var(--card-bg);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  position: relative;
+  min-height: auto;
+  padding-bottom: 30px;
+}
+
+.user-edit__title {
+  color: var(--text-color);
+  margin-bottom: 24px;
+  font-size: 24px;
+  font-weight: 600;
+  text-align: center;
+  border-bottom: 2px solid var(--primary-color);
+  padding-bottom: 12px;
+}
+
+.user-edit-form {
+  width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.user-table-container {
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  margin-bottom: 24px;
+  background: var(--card-bg);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.user-table {
+  width: 100%;
+  max-width: 100%;
+  border-collapse: collapse;
+  background: var(--card-bg);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  table-layout: fixed;
+  box-sizing: border-box;
+}
+
+.user-table thead {
+  background: var(--primary-color);
+  color: var(--inverse-color);
+}
+
+.user-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid var(--primary-hover);
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-table th:first-child {
+  width: 30%;
+  min-width: 120px;
+}
+
+.user-table th:last-child {
+  width: 70%;
+}
+
+.user-table tbody tr {
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s ease;
+}
+
+.user-table tbody tr:hover {
+  background-color: var(--hover-bg);
+}
+
+.user-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.user-table td {
+  padding: 12px 16px;
+  vertical-align: top;
+  max-width: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.field-name {
+  font-weight: 600;
+  color: var(--text-color);
+  background-color: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+}
+
+.field-name.readonly {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.field-value {
+  color: var(--text-secondary);
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  position: relative;
+  background: var(--card-bg);
+}
+
+.field-value.readonly {
+  background-color: var(--bg-secondary);
+  color: var(--muted-color);
+}
+
+/* Form Input Styles */
+.field-input,
+.field-textarea {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  padding: 8px 12px;
+  border: 2px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.field-input:focus,
+.field-textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-color-alpha);
+  background-color: var(--card-bg);
+}
+
+.field-input:hover,
+.field-textarea:hover {
+  border-color: var(--primary-hover);
+}
+
+.field-textarea {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.5;
+}
+
+.field-input[required] {
+  border-left: 4px solid var(--warning-color);
+}
+
+.field-input:invalid {
+  border-color: var(--error-color);
+}
+
+.field-input:valid:not(:placeholder-shown) {
+  border-color: var(--success-color);
+}
+
+/* Read-only row styling */
+.readonly-row {
+  background-color: var(--bg-secondary);
+  opacity: 0.8;
+}
+
+.readonly-row:hover {
+  background-color: var(--bg-secondary) !important;
+}
+
+/* Footer with buttons */
+.user-table-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border-color);
+  margin-top: 0;
+  margin-bottom: 20px;
+  gap: 12px;
+  background: var(--card-bg);
+  border-radius: 0 0 8px 8px;
+  min-height: 60px;
+  box-sizing: border-box;
+}
+
+/* Checkbox field styling */
+.field-checkbox {
+  width: auto;
+  height: auto;
+  margin: 0.5em 0;
+  transform: scale(1.2);
+  accent-color: var(--primary-color);
+}
+/* Override table cell clipping for checkbox */
+.field-value {
+  /* ensure cell can accommodate inputs */
+  max-width: none;
+}
+/* For checkbox specifically, ensure visibility */
+.field-value .field-checkbox {
+  overflow: visible;
+  max-width: none;
+}
+
+
+/* Loading and error states */
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  font-size: 16px;
+  color: var(--text-secondary);
+  background: var(--card-bg);
+  border-radius: 8px;
+}
+
+.error-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  font-size: 16px;
+  color: var(--error-color);
+  background-color: var(--danger-bg);
+  border: 1px solid var(--error-color);
+  border-radius: 6px;
+  margin: 20px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .user-edit {
+    padding: 16px;
+    margin: 10px;
+    max-width: calc(100vw - 20px);
+    padding-bottom: 30px;
+  }
+
+  .user-edit__title {
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
+
+  .user-table th,
+  .user-table td {
+    padding: 12px 8px;
+  }
+
+  .user-table th:first-child {
+    width: 35%;
+    min-width: 100px;
+  }
+
+  .user-table-footer {
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+    min-height: 100px;
+  }
+
+  .user-table-footer > * {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-edit {
+    padding: 12px;
+    margin: 5px;
+    max-width: calc(100vw - 10px);
+  }
+
+  .user-table {
+    font-size: 14px;
+  }
+
+  .user-table th,
+  .user-table td {
+    padding: 8px 6px;
+  }
+
+  .user-table th:first-child {
+    width: 30%;
+    min-width: 80px;
+  }
+
+  .field-input,
+  .field-textarea {
+    padding: 10px 8px;
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+}

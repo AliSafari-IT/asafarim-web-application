@@ -1,32 +1,12 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { IUserPreferences, IUpdateUserPreferences } from '../interfaces/IUser';
+import { IUserPreferences, IUpdateUserPreferences, IUser } from '../interfaces/IUser';
 import { useTheme } from '@asafarim/react-themes';
-
-// Types based on your API DTOs
-export interface User {
-  id: string;
-  username: string;
-  email: string;
-  firstName?: string;
-  lastName?: string;
-  avatar?: string;
-  bio?: string;
-  website?: string;
-  location?: string;
-  role: string;
-  isEmailVerified: boolean;
-  emailVerifiedAt?: string;
-  lastLoginAt?: string;
-  createdAt: string;
-  updatedAt: string;
-  isActive: boolean;
-}
 
 export interface AuthResponse {
   token: string;
   refreshToken: string;
   expiresAt: string;
-  user: User;
+  user: IUser;
 }
 
 export interface ApiResponse<T> {
@@ -55,14 +35,14 @@ export interface RegisterData {
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: IUser | null;
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (credentials: LoginCredentials) => Promise<ApiResponse<AuthResponse>>;
   register: (data: RegisterData) => Promise<ApiResponse<AuthResponse>>;
   logout: () => void;
-  updateUser: (userData: Partial<User>) => void;
+  updateUser: (userData: Partial<IUser>) => void;
   preferences: IUserPreferences | null;
   getPreferences: () => Promise<ApiResponse<IUserPreferences> | null>;
   updatePreferences: (preferences: IUpdateUserPreferences) => Promise<ApiResponse<IUserPreferences> | null>;
@@ -75,7 +55,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const DOTNET_API_BASE_URL = 'http://localhost:5242/api';
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<IUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [preferences, setPreferences] = useState<IUserPreferences | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -351,7 +331,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const updateUser = (userData: Partial<User>) => {
+  const updateUser = (userData: Partial<IUser>) => {
     if (user) {
       const updatedUser = { ...user, ...userData };
       setUser(updatedUser);

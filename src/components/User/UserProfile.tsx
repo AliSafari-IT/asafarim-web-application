@@ -1,8 +1,17 @@
-import { useAuth } from '../../context/AuthContext';
-import { Navigate } from 'react-router-dom';
+import { ButtonComponent } from "@asafarim/shared";
+import { useAuth } from "../../context/AuthContext";
+import { Navigate } from "react-router-dom";
+import React from "react";
+import "./UserProfile.css";
+import { useNavigate } from "react-router-dom";
 
-const Profile = () => {
+interface UserProfileProps {
+  // Add props here
+}
+
+const UserProfile: React.FC<UserProfileProps> = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
+  const navigate = useNavigate();
 
   if (isLoading) {
     return (
@@ -20,13 +29,15 @@ const Profile = () => {
     return <Navigate to="/" replace />;
   }
 
-  const displayName = user.firstName && user.lastName 
-    ? `${user.firstName} ${user.lastName}`
-    : user.username;
+  const displayName =
+    user.firstName && user.lastName
+      ? `${user.firstName} ${user.lastName}`
+      : user.username;
 
-  const initials = user.firstName && user.lastName
-    ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`
-    : user.username.charAt(0).toUpperCase();
+  const initials =
+    user.firstName && user.lastName
+      ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`
+      : user.username.charAt(0).toUpperCase();
 
   return (
     <div className="profile-container">
@@ -44,7 +55,9 @@ const Profile = () => {
           <p className="profile-email">{user.email}</p>
           {!user.isEmailVerified && (
             <div className="verification-status">
-              <span className="status-badge unverified">Email not verified</span>
+              <span className="status-badge unverified">
+                Email not verified
+              </span>
             </div>
           )}
         </div>
@@ -65,16 +78,17 @@ const Profile = () => {
             <div className="detail-item">
               <label>Last login</label>
               <span>
-                {user.lastLoginAt 
+                {user.lastLoginAt
                   ? new Date(user.lastLoginAt).toLocaleDateString()
-                  : 'Never'
-                }
+                  : "Never"}
               </span>
             </div>
             <div className="detail-item">
               <label>Account status</label>
-              <span className={`status ${user.isActive ? 'active' : 'inactive'}`}>
-                {user.isActive ? 'Active' : 'Inactive'}
+              <span
+                className={`status ${user.isActive ? "active" : "inactive"}`}
+              >
+                {user.isActive ? "Active" : "Inactive"}
               </span>
             </div>
           </div>
@@ -93,7 +107,11 @@ const Profile = () => {
               {user.website && (
                 <div className="detail-item">
                   <label>Website</label>
-                  <a href={user.website} target="_blank" rel="noopener noreferrer">
+                  <a
+                    href={user.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     {user.website}
                   </a>
                 </div>
@@ -108,8 +126,19 @@ const Profile = () => {
           </div>
         )}
       </div>
+      <div className="detail-footer">
+        <ButtonComponent
+          iconPosition="right"
+          icon="✏️"
+          label="Edit Profile"
+          onClick={() => navigate(`/users/${user.id}/edit`)}
+          variant="primary"
+          size="sm"
+          className="edit-profile-button"
+        />
+      </div>
     </div>
   );
 };
 
-export default Profile;
+export default UserProfile;

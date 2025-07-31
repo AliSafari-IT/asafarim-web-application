@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { UserService } from "../../services/UserService";
 import { IUser } from "../../interfaces/IUser";
 import AdminHeader from "../../components/AdminHeader";
 import "./AdminUsers.css";
-
+import { ButtonComponent, DDItems, SearchItems } from '@asafarim/shared';
 interface AdminUsersState {
   users: IUser[];
   loading: boolean;
@@ -22,6 +22,7 @@ interface AdminUsersState {
 
 const AdminUsers: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [state, setState] = useState<AdminUsersState>({
     users: [],
     loading: true,
@@ -336,6 +337,11 @@ const AdminUsers: React.FC = () => {
     </svg>
   );
 
+  // Handle edit user
+  const handleEditUser = (userId: string) => {
+    navigate(`/users/${userId}/edit`);
+  };
+
   return (
     <div className="admin-users">
       <AdminHeader
@@ -361,25 +367,27 @@ const AdminUsers: React.FC = () => {
 
       <div className="admin-controls">
         <div className="search-controls">
-          <input
-            type="text"
+          <SearchItems
+            searchType="minimal"
             placeholder="Search users..."
-            value={state.searchTerm}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="search-input"
+            onSearchChange={handleSearch}
+            searchTerm={state.searchTerm}
+            key={state.searchTerm} // Reset search input on term change
           />
 
-          <select
-            value={state.roleFilter}
-            onChange={(e) => handleRoleFilter(e.target.value)}
-            className="filter-select"
-          >
-            <option value="">All Roles</option>
-            <option value="Admin">Admin</option>
-            <option value="Moderator">Moderator</option>
-            <option value="User">User</option>
-            <option value="Guest">Guest</option>
-          </select>
+          <DDItems
+            selectedValue={state.roleFilter}
+            onValueChange={handleRoleFilter}
+            items={[
+              { value: "", label: "All Roles" },
+              { value: "Admin", label: "Admin" },
+              { value: "Moderator", label: "Moderator" },
+              { value: "User", label: "User" },
+              { value: "Guest", label: "Guest" },
+            ]}
+            dropdownType="minimal"
+          />
+
         </div>
 
         <div className="bulk-actions">
@@ -434,18 +442,9 @@ const AdminUsers: React.FC = () => {
                     <td>{user.username}</td>
                     <td>{user.email}</td>
                     <td>
-                      <select
-                        value={user.role}
-                        onChange={(e) =>
-                          handleUpdateRole(user.id, e.target.value as any)
-                        }
-                        className="role-select"
-                      >
-                        <option value="Admin">Admin</option>
-                        <option value="Moderator">Moderator</option>
-                        <option value="User">User</option>
-                        <option value="Guest">Guest</option>
-                      </select>
+                      <span className={`role-badge role-${user.role.toLowerCase()}`}>
+                        {user.role}
+                      </span>
                     </td>
                     <td>
                       <span
@@ -459,13 +458,28 @@ const AdminUsers: React.FC = () => {
                     <td>{new Date(user.createdAt).toLocaleDateString()}</td>
                     <td>
                       <div className="action-buttons">
-                        <button
-                          onClick={() => handleDeleteUser(user.id)}
-                          className="delete-btn"
+                        <ButtonComponent
+                          onClick={() => handleEditUser(user.id)}
                           disabled={state.loading}
-                        >
-                          Delete
-                        </button>
+                          label="Edit"
+                          iconPosition="only"
+                          icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M3 17.25V21h3.75l12.69-12.69-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+                          </svg>}
+                          variant="primary"
+                          size="sm"
+                        />
+                        <ButtonComponent
+                          onClick={() => handleDeleteUser(user.id)}
+                          disabled={state.loading}
+                          label="Delete"
+                          iconPosition="only"
+                          icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M3 6h18v2H3V6zm3 4h12v12H6V10zm2 2v8h8v-8H8z" />
+                          </svg>}
+                          variant="danger"
+                          size="sm"
+                        />
                       </div>
                     </td>
                   </tr>

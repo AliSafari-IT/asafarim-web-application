@@ -5,7 +5,7 @@ import { RepositoryService } from '../../services/RepositoryService';
 import { IRepository } from '../../interfaces/IRepository';
 import './AdminRepositories.css';
 import AdminHeader from '../../components/AdminHeader';
-import SearchItems from '../../components/SearchItems';
+import {SearchItems} from '@asafarim/shared';
 
 interface AdminRepositoriesState {
   repositories: IRepository[];

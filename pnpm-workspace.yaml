@@ -1,4 +1,3 @@
 packages:
     - "ASafariM.Api"
     - "db-data"
-    - "."

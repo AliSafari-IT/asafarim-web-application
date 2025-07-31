@@ -4,12 +4,11 @@ import { ProjectService } from "../../services/ProjectService";
 import { IProjectSummary } from "../../interfaces/IProject";
 import { useAuth } from "../../context/AuthContext";
 import AddProject from "../AddProject/AddProject";
-import SearchItems from "../SearchItems";
+import {SearchItems, DDItems} from "@asafarim/shared";
 import "./ProjectsDisplay.css";
 import { PaginatedProjectGrid } from "@asafarim/paginated-project-grid";
 import { useTheme } from "@asafarim/react-themes";
 import { useNavigate } from "react-router-dom";
-import DDItems from "../DDItems";
 
 interface ProjectsDisplayProps {
   showUserProjectsOnly?: boolean;
@@ -24,8 +23,8 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
 }) => {
   const { isAuthenticated, user, token } = useAuth();
   const [projects, setProjects] = useState<IProjectSummary[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [_totalCount, setTotalCount] = useState(0);
+  const [_currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(12);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -156,11 +155,6 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
     isAuthenticated,
     user?.id,
   ]);
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    loadProjects(page);
-  };
 
   const handleProjectAdded = () => {
     setShowAddProject(false);

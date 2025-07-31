@@ -105,18 +105,36 @@ const AddProject: React.FC<AddProjectProps> = ({ onProjectAdded, onCancel }) => 
   useEffect(() => {
     const loadTechStacks = async () => {
       try {
+        console.log('AddProject: Loading tech stacks...');
         setIsLoadingTechStacks(true);
         const response = await TechStackService.getTechStacks();
         
+        console.log('AddProject: TechStack service response:', response);
+        
         if (response.success && response.data) {
-          setTechStacks(response.data);
+          // The TechStackService returns a nested structure with techStacks array
+          let techStacksData: ITechStack[] = [];
+          
+          if (Array.isArray(response.data)) {
+            // Direct array response
+            techStacksData = response.data;
+          } else if (response.data && typeof response.data === 'object' && 'techStacks' in response.data) {
+            // Nested response with techStacks property
+            techStacksData = Array.isArray(response.data.techStacks) ? response.data.techStacks : [];
+          }
+          
+          console.log('AddProject: Setting techStacks to:', techStacksData);
+          setTechStacks(techStacksData);
         } else {
-          console.error('Failed to load tech stacks:', response.message);
+          console.error('AddProject: Failed to load tech stacks:', response.message);
+          setTechStacks([]); // Set empty array on error
         }
       } catch (error) {
-        console.error('Error loading tech stacks:', error);
+        console.error('AddProject: Error loading tech stacks:', error);
+        setTechStacks([]); // Set empty array on error
       } finally {
         setIsLoadingTechStacks(false);
+        console.log('AddProject: Tech stacks loading completed');
       }
     };
     
