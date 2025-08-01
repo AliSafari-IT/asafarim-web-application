@@ -1,7 +1,7 @@
 /* User Edit Form Styles - Using ASafariM Design System */
 
 .user-edit {
-  padding: 20px;
+  padding: 0 20px;
   max-width: 900px;
   margin: 0 auto;
   background: var(--card-bg);
@@ -22,7 +22,7 @@
   font-weight: 600;
   text-align: center;
   border-bottom: 2px solid var(--primary-color);
-  padding-bottom: 12px;
+  padding-bottom: 0 12px;
 }
 
 .user-edit-form {
@@ -101,6 +101,20 @@
   max-width: 0;
   overflow: hidden;
   box-sizing: border-box;
+}
+
+/* Override for cells containing checkboxes */
+.user-table td:has(.checkbox-wrapper) {
+  max-width: none !important;
+  overflow: visible !important;
+  width: auto !important;
+}
+
+/* Fallback for browsers without :has() support */
+.user-table td.checkbox-cell {
+  max-width: none !important;
+  overflow: visible !important;
+  width: auto !important;
 }
 
 .field-name {
@@ -312,4 +326,43 @@
     padding: 10px 8px;
     font-size: 16px; /* Prevent zoom on iOS */
   }
+}
+.checkbox-wrapper {
+  display: flex !important;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  width: 100% !important;
+  padding: 8px 0;
+  overflow: visible !important;
+  min-height: 40px;
+}
+
+.checkbox-wrapper input[type="checkbox"] {
+  display: block !important; /* Override global display: none rule */
+  width: 20px !important;
+  height: 20px !important;
+  cursor: pointer;
+  accent-color: var(--primary-color);
+  transform: scale(1.2) !important;
+  flex-shrink: 0;
+  opacity: 1 !important;
+  border: 2px solid var(--primary-color);
+  visibility: visible !important;
+}
+
+.checkbox-wrapper label {
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+/* Override table cell overflow for checkbox fields */
+.field-value:has(.checkbox-wrapper) {
+  overflow: visible !important;
+  max-width: none !important;
+}
+
+/* Fallback for browsers that don't support :has() */
+.user-table td.field-value {
+  overflow: visible;
 }

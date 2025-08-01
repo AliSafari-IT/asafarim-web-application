@@ -2,10 +2,9 @@
 .admin-header {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
   border-bottom: 2px solid var(--border-color);
+  margin-bottom: 1.5rem; /* reduce gap beneath subtitle */
+  padding-bottom: 1.25rem; /* small gap before border */
 }
 
 .admin-header-main {
@@ -13,15 +12,45 @@
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 1rem;
   color: var(--text-secondary);
+  margin-bottom: 1.5rem; /* reduce gap below title row */
 }
 
 .admin-header h1 {
   color: var(--info-color);
-  margin: 0;
+  margin: auto;
   font-size: 2rem;
   font-weight: 600;
+}
+.admin-header h2 {
+  color: var(--text-secondary);
+  font-size: 1.125rem;
+  margin: 0;
+  padding-bottom: 0.25rem; /* small gap to underline/border */
+}
+.admin-header-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+/* Subtitle spacing adjustment */
+.admin-header-subtitle {
+  margin: 0;            /* remove extra h2 margins */
+  padding-bottom: 0.25rem; /* small gap to underline/border */
+  font-size: 1.125rem;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+  .admin-header-title {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-header-title {
+    align-items: center;
+  }
 }
 
 .admin-header-actions {
@@ -67,9 +96,41 @@
   .admin-header h1 {
     font-size: 1.5rem;
   }
-  
+
   .admin-stats {
     flex-direction: column;
     gap: 0.5rem;
   }
+}
+
+/* Override header spacing */
+/* Override header spacing: remove all vertical margins and paddings */
+.admin-header {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+.admin-header-main {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+.user-edit .admin-header {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.user-edit .admin-header-main {
+  margin-block: 0 !important;
+  padding-block: 0 !important;
+}
+.admin-header-title {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+.admin-header-subtitle {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding: 0 !important;
 }

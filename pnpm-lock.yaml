@@ -18,8 +18,8 @@ importers:
         specifier: ^1.5.0
         version: 1.5.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@asafarim/shared':
-        specifier: ^1.4.3
-        version: 1.4.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^1.6.1
+        version: 1.6.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       cors:
         specifier: ^2.8.5
         version: 2.8.5
@@ -111,8 +111,8 @@ packages:
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
 
-  '@asafarim/shared@1.4.3':
-    resolution: {integrity: sha512-jVE+1jkZp/v709cODTVdsY6PEr/XZtX6rPEBmO0YZBuDt4HS5aRo4SbDfcn6i9yHFzy+r4qcJBqE/ICBsMUy6w==}
+  '@asafarim/shared@1.6.1':
+    resolution: {integrity: sha512-epO6auBT8x9PLmGuNm8gf+EYK0L1xBjPpldsjorWckW6mme51X4QESy0VInG6Ayab/oh44eBdI7kqD7M57krsg==}
     peerDependencies:
       react: ^18.2.0
       react-dom: ^18.2.0
@@ -1695,7 +1695,7 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  '@asafarim/shared@1.4.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@asafarim/shared@1.6.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)

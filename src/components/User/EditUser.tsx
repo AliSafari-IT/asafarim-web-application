@@ -7,6 +7,7 @@ import { fetchUserDetails, updateUser } from "../../services/UserService";
 import { IUser } from "../../interfaces/IUser";
 import { ButtonComponent, InputFields } from "@asafarim/shared";
 import "./EditUser.css";
+import AdminHeader from "../AdminHeader";
 
 const EditUser: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -32,7 +33,7 @@ const EditUser: React.FC = () => {
   ];
   // Only admins can edit email, role, and isActive status
   if (isAdminUser) {
-    editableFields.push("role", "email");
+    editableFields.push("role", "isActive", "email");
   }
 
   // Define which fields are read-only but should be displayed
@@ -40,11 +41,11 @@ const EditUser: React.FC = () => {
     "id",
     "isEmailVerified",
     "createdAt",
-    "updatedAt", "isActive",
+    "updatedAt",
   ];
   // Non-admins cannot edit email, role, and isActive status, show as read-only
   if (!isAdminUser) {
-    readOnlyFields.push("email", "role");
+    readOnlyFields.push("email", "role", "isActive");
   }
 
   useEffect(() => {
@@ -69,7 +70,8 @@ const EditUser: React.FC = () => {
     fetchUser();
   }, [id, isAuthenticated, navigate]);
 
-  const handleInputChange = (field: keyof IUser, value: string | boolean) => {
+  const handleChange = (field: keyof IUser, value: string | boolean) => {
+    console.log("Updating field:", field, "with value:", value);
     // Update the userDetails state with the new value for the specified field
     if (!userDetails) return;
     setUserDetails({
@@ -145,13 +147,31 @@ const EditUser: React.FC = () => {
   // Function to render input based on field type
   const renderInput = (field: keyof IUser, value: any) => {
     const fieldValue = value || "";
+    const resize = field === "bio" || field === "avatar";
+
+    const isChecked = fieldValue === "true" || fieldValue === "on";
+    const inputClasses = ["input-field", resize ? "input-field-textarea" : ""]
+      .filter(Boolean)
+      .join(" ");
 
     switch (field) {
+      case "isActive":
+        return (
+          <InputFields.Checkbox
+            checked={userDetails?.isActive || false}
+            onChange={(val: string | boolean) => handleChange(field, val)}
+            key={field + "__checkbox"}
+            styling="default"
+            label={userDetails?.isActive ? "Active" : "Inactive"}
+            className="checkbox-wrapper"
+          />
+        );
+
       case "email":
         return (
           <InputFields.Email
             value={fieldValue}
-            onChange={(val: string) => handleInputChange(field, val)}
+            onChange={(val: string) => handleChange(field, val)}
             key={field + "_email"}
           />
         );
@@ -160,7 +180,7 @@ const EditUser: React.FC = () => {
           <InputFields.Url
             placeholder="https://example.com"
             value={fieldValue}
-            onChange={(val: string) => handleInputChange(field, val)}
+            onChange={(val: string) => handleChange(field, val)}
             key={field + "_website"}
           />
         );
@@ -169,7 +189,7 @@ const EditUser: React.FC = () => {
           <InputFields.Textarea
             name="bio"
             value={fieldValue}
-            onChange={(val: string) => handleInputChange(field, val)}
+            onChange={(val: string) => handleChange(field, val)}
             rows={3}
             placeholder="Tell us about yourself..."
           />
@@ -178,7 +198,7 @@ const EditUser: React.FC = () => {
         return (
           <InputFields.Select
             name="role"
-            onChange={(val: string) => handleInputChange(field, val)}
+            onChange={(val: string) => handleChange(field, val)}
             value={fieldValue}
             className="field-select"
             key={field + "_role"}
@@ -190,15 +210,15 @@ const EditUser: React.FC = () => {
             ]}
           />
         );
-     
+
       default:
         return (
           <InputFields.Text
             name={field}
             value={fieldValue}
-            onChange={(val: string) => handleInputChange(field, val)}
+            onChange={(val: string) => handleChange(field, val)}
             required={
-              field === "username"  ||
+              field === "username" ||
               field === "firstName" ||
               field === "lastName"
             }
@@ -213,8 +233,14 @@ const EditUser: React.FC = () => {
 
   return (
     <div className="user-edit">
-      <h2 className="user-edit__title">Edit User Information</h2>
-
+      {/* Wrapper to collapse header spacing */}
+      <div className="edituser-header-wrapper">
+        <AdminHeader
+          title="Edit User"
+          subtitle="Modify user details and settings"
+          icon="✏️"
+        />
+      </div>
       <form onSubmit={handleSubmit} className="user-edit-form">
         <div className="user-table-container">
           <table className="user-table">
@@ -229,7 +255,11 @@ const EditUser: React.FC = () => {
               {editableFields.map((field) => (
                 <tr key={field}>
                   <td className="field-name">{formatFieldName(field)}</td>
-                  <td className="field-value">
+                  <td
+                    className={`field-value ${
+                      field === "isActive" ? "checkbox-cell" : ""
+                    }`}
+                  >
                     {renderInput(field, userDetails[field])}
                   </td>
                 </tr>

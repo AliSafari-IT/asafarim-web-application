@@ -13,6 +13,7 @@ export interface IUser extends IBaseEntity {
     linkedinProfile?: string;
     twitterHandle?: string;
     role: 'Admin' | 'User' | 'Moderator' | 'Guest';
+    isActive: boolean;
     isEmailVerified: boolean;
     lastLoginAt?: Date;
     preferences?: IUserPreferences;
