@@ -53,79 +53,49 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
     setIsLoading(true);
     setError(null);
 
-    // Debug authentication state
-    console.log("ProjectsDisplay Debug:");
-    console.log("- showUserProjectsOnly:", showUserProjectsOnly);
-    console.log("- isAuthenticated:", isAuthenticated);
-    console.log("- user:", user);
-    console.log("- token:", token ? "exists" : "null");
-    console.log("- Loading projects for page:", page);
-
     try {
-      let result;
-
-      if (showUserProjectsOnly) {
-        if (!isAuthenticated || !user?.id) {
-          setError(
-            "Authentication required. Please log in to access this feature."
-          );
-          setProjects([]);
-          setTotalCount(0);
-          setIsLoading(false);
-          return;
-        }
-        // Use getProjects with userId filter instead of getUserProjects
-        result = await ProjectService.getProjects(
-          page,
-          pageSize,
-          searchTerm || undefined,
-          statusFilter || undefined,
-          undefined, // isPublic
-          undefined, // isFeatured
-          user.id // userId
+      // Check authentication for user-specific projects
+      if (showUserProjectsOnly && (!isAuthenticated || !user?.id)) {
+        setError(
+          "Authentication required. Please log in to access this feature."
         );
-        console.log("User projects result-1:", result?.data);
-        if (result.success && result.data) {
-          // Handle both paginated response and direct array response
-          const projectsArray = Array.isArray(result.data) ? result.data : [];
-          const totalCount = Array.isArray(result.data)
-            ? result.data.length
-            : result.data.totalCount || 0;
-          const pageNumber = Array.isArray(result.data)
-            ? 1
-            : result.data.pageNumber || 1;
+        setProjects([]);
+        setTotalCount(0);
+        return;
+      }
 
-          setProjects(projectsArray);
-          setTotalCount(totalCount);
-          setCurrentPage(pageNumber);
-        }
+      const result = await ProjectService.getProjects(
+        page,
+        pageSize,
+        searchTerm || undefined,
+        statusFilter || undefined,
+        showUserProjectsOnly ? undefined : showPublicOnly,
+        showUserProjectsOnly ? undefined : showFeaturedOnly,
+        showUserProjectsOnly ? user?.id : undefined
+      );
+
+      if (result.success && result.data) {
+        // Handle both paginated response and direct array response
+        const projectsArray = Array.isArray(result.data) ? result.data : [];
+        const totalCount = Array.isArray(result.data)
+          ? result.data.length
+          : result.data.totalCount || 0;
+        const pageNumber = Array.isArray(result.data)
+          ? 1
+          : result.data.pageNumber || 1;
+
+        setProjects(projectsArray);
+        setTotalCount(totalCount);
+        setCurrentPage(pageNumber);
       } else {
-        result = await ProjectService.getProjects(
-          page,
-          pageSize,
-          searchTerm || undefined,
-          statusFilter || undefined,
-          showPublicOnly,
-          showFeaturedOnly
-        );
-        console.log("All projects result:", result);
-        if (result.success && result.data) {
-          // Handle both paginated response and direct array response
-          const projectsArray = Array.isArray(result.data) ? result.data : [];
-          const totalCount = Array.isArray(result.data)
-            ? result.data.length
-            : result.data.totalCount || 0;
-          const pageNumber = Array.isArray(result.data)
-            ? 1
-            : result.data.pageNumber || 1;
-
-          setProjects(projectsArray);
-          setTotalCount(totalCount);
-          setCurrentPage(pageNumber);
-        }
+        throw new Error(result.message || "Failed to load projects");
       }
     } catch (error) {
-      setError("An unexpected error occurred while loading projects");
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred while loading projects";
+      setError(errorMessage);
       setProjects([]);
       setTotalCount(0);
       console.error("Error loading projects:", error);
@@ -133,11 +103,6 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    console.log("ProjectsDisplay useEffect");
-    console.log("Projects:", projects);
-  }, [projects]);
 
   useEffect(() => {
     // Only load projects if we're not showing user projects, or if we are and user is authenticated
@@ -220,7 +185,6 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
             }
             size="xs"
           />
-
           <InputFields.Checkbox
             label="Featured Projects Only"
             checked={!!showFeaturedOnly}
@@ -228,6 +192,18 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
               setShowFeaturedOnly(checked ? true : undefined)
             }
             className="xs"
+          />
+          <InputFields.Reset
+            className="xs"
+            onClick={() => {
+              setSearchTerm("");
+              setStatusFilter("");
+              setShowPublicOnly(undefined);
+              setShowFeaturedOnly(undefined);
+            }}
+            size="md"
+            icon="🔄"
+            iconPosition="only"
           />
         </div>
       </div>
@@ -345,43 +321,39 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
                   ],
                 };
 
-                console.log(
-                  "Transformed project:",
-                  transformedProject.id,
-                  transformedProject
-                );
                 return transformedProject;
               }) || [];
 
-          console.log("Final transformed projects array:", transformedProjects);
           if (!transformedProjects || transformedProjects.length === 0) {
-            console.warn("No valid projects found after transformation.");
-            return (<div className="no-projects">
-              <p>No projects found.</p>
-              {showAddButton && isAuthenticated && (
-                <button
-                  className="btn-add-first-project"
-                  onClick={() => setShowAddProject(true)}
-                >
-                  Add your first project
-                </button>
-              )}
-            </div>);
+            return (
+              <div className="no-projects">
+                <p>No projects found.</p>
+                {showAddButton && isAuthenticated && (
+                  <button
+                    className="btn-add-first-project"
+                    onClick={() => setShowAddProject(true)}
+                  >
+                    Add your first project
+                  </button>
+                )}
+              </div>
+            );
           }
 
           return (
             <PaginatedProjectGrid
               key={"asafarim-projects-grid"}
               projects={transformedProjects.filter(
-                (p) => showPublicOnly ? p.isPublic : true &&
-                showFeaturedOnly ? p.isFeatured : true
+                (p) =>
+                  p &&
+                  (showPublicOnly ? p.isPublic : true) &&
+                  (showFeaturedOnly ? p.isFeatured : true)
               )}
               cardsPerPage={6}
               currentTheme={currentTheme.mode}
               enableSearch={false}
               showTechStackIcons={true}
               onProjectClick={(project: any) => {
-                console.log("Clicked project:", project.title);
                 navigate(`/projects/${project.id}`);
               }}
             />
