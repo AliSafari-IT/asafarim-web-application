@@ -14,19 +14,21 @@ const UserDropdown = () => {
 
   // Load user projects when dropdown opens
   const loadUserProjects = async () => {
-    if (projectsLoaded || projectsLoading || !user?.id) return;
+    if (userProjects.length > 0 || projectsLoading || !user?.id) return;
     
     setProjectsLoading(true);
     try {
       const response = await ProjectService.getProjects(1, 5, undefined, undefined, undefined, undefined, user.id); // Load first 5 user projects
-      if (response.success && response.data && response.data.items) {
-        setUserProjects(response.data.items || []);
+        console.log('User projects loaded successfully:', response);
+      if (response.success && response.data) {
+        // Successfully loaded user projects
+        Array.isArray(response.data) ? setUserProjects(response.data) : setUserProjects([]);
       } else if (response.statusCode === 401) {
         // Authentication error - don't show projects
         console.warn('Authentication required for user projects');
         setUserProjects([]);
       } else {
-        console.error('Failed to load user projects:', response.message);
+        console.error('Failed to load user projects:', response);
         setUserProjects([]);
       }
     } catch (error) {

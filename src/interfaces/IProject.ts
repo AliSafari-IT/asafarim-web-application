@@ -87,7 +87,7 @@ export interface IUpdateProject {
 }
 
 export interface IPaginatedProjectsResponse {
-  items: IProjectSummary[];
+  data: IProjectSummary[];
   totalCount: number;
   pageNumber: number;
   pageSize: number;
