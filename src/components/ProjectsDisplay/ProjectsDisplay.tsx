@@ -193,18 +193,22 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
             }
             className="xs"
           />
-          <InputFields.Reset
-            className="xs"
-            onClick={() => {
-              setSearchTerm("");
-              setStatusFilter("");
-              setShowPublicOnly(undefined);
-              setShowFeaturedOnly(undefined);
-            }}
-            size="md"
-            icon="🔄"
-            iconPosition="only"
-          />
+          {(searchTerm ||
+            statusFilter ||
+            showPublicOnly ||
+            showFeaturedOnly) && (
+            <InputFields.Reset
+              onClick={() => {
+                setSearchTerm("");
+                setStatusFilter("");
+                setShowPublicOnly(undefined);
+                setShowFeaturedOnly(undefined);
+              }}
+              size="md"
+              icon="✖️"
+              iconPosition="only"
+            />
+          )}
         </div>
       </div>
 
