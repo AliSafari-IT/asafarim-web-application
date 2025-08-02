@@ -4,7 +4,12 @@ import { ProjectService } from "../../services/ProjectService";
 import { IProjectSummary } from "../../interfaces/IProject";
 import { useAuth } from "../../context/AuthContext";
 import AddProject from "../AddProject/AddProject";
-import {SearchItems, DDItems} from "@asafarim/shared";
+import {
+  SearchItems,
+  DDItems,
+  ButtonComponent,
+  InputFields,
+} from "@asafarim/shared";
 import "./ProjectsDisplay.css";
 import { PaginatedProjectGrid } from "@asafarim/paginated-project-grid";
 import { useTheme } from "@asafarim/react-themes";
@@ -82,9 +87,7 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
         console.log("User projects result-1:", result?.data);
         if (result.success && result.data) {
           // Handle both paginated response and direct array response
-          const projectsArray = Array.isArray(result.data)
-            ? result.data
-            : result.data.items || [];
+          const projectsArray = Array.isArray(result.data) ? result.data : [];
           const totalCount = Array.isArray(result.data)
             ? result.data.length
             : result.data.totalCount || 0;
@@ -108,9 +111,7 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
         console.log("All projects result:", result);
         if (result.success && result.data) {
           // Handle both paginated response and direct array response
-          const projectsArray = Array.isArray(result.data)
-            ? result.data
-            : result.data.items || [];
+          const projectsArray = Array.isArray(result.data) ? result.data : [];
           const totalCount = Array.isArray(result.data)
             ? result.data.length
             : result.data.totalCount || 0;
@@ -176,12 +177,15 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
       <div className="projects-header">
         <h1>{title}</h1>
         {showAddButton && isAuthenticated && (
-          <button
-            className="btn-add-project"
+          <ButtonComponent
+            className="btn btn-add-project"
             onClick={() => setShowAddProject(true)}
-          >
-            Add Project
-          </button>
+            variant="ghost"
+            icon="➕"
+            iconPosition="left"
+            size="md"
+            label="Add New Project"
+          />
         )}
       </div>
 
@@ -207,35 +211,25 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
           dropdownType="minimal"
         />
 
-        {!showUserProjectsOnly && (
-          <>
-            <div className="filter-group">
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={showPublicOnly === true}
-                  onChange={(e) =>
-                    setShowPublicOnly(e.target.checked ? true : undefined)
-                  }
-                />
-                Public Only
-              </label>
-            </div>
+        <div className="filter-group">
+          <InputFields.Checkbox
+            label="Public Projects Only"
+            checked={!!showPublicOnly}
+            onChange={(checked: boolean) =>
+              setShowPublicOnly(checked ? true : undefined)
+            }
+            size="xs"
+          />
 
-            <div className="filter-group">
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={showFeaturedOnly === true}
-                  onChange={(e) =>
-                    setShowFeaturedOnly(e.target.checked ? true : undefined)
-                  }
-                />
-                Featured Only
-              </label>
-            </div>
-          </>
-        )}
+          <InputFields.Checkbox
+            label="Featured Projects Only"
+            checked={!!showFeaturedOnly}
+            onChange={(checked: boolean) =>
+              setShowFeaturedOnly(checked ? true : undefined)
+            }
+            className="xs"
+          />
+        </div>
       </div>
 
       {error && <div className="error-message">{error}</div>}
@@ -247,7 +241,6 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
             (projects && Array.isArray(projects) ? projects : [])
               ?.filter((p) => p && typeof p === "object") // Filter out null/undefined projects
               ?.map((p) => {
-                console.log("Transforming project:", p.id, p);
                 // Map status to expected enum values
                 let mappedStatus:
                   | "active"
@@ -361,11 +354,28 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
               }) || [];
 
           console.log("Final transformed projects array:", transformedProjects);
+          if (!transformedProjects || transformedProjects.length === 0) {
+            console.warn("No valid projects found after transformation.");
+            return (<div className="no-projects">
+              <p>No projects found.</p>
+              {showAddButton && isAuthenticated && (
+                <button
+                  className="btn-add-first-project"
+                  onClick={() => setShowAddProject(true)}
+                >
+                  Add your first project
+                </button>
+              )}
+            </div>);
+          }
 
           return (
             <PaginatedProjectGrid
               key={"asafarim-projects-grid"}
-              projects={transformedProjects}
+              projects={transformedProjects.filter(
+                (p) => showPublicOnly ? p.isPublic : true &&
+                showFeaturedOnly ? p.isFeatured : true
+              )}
               cardsPerPage={6}
               currentTheme={currentTheme.mode}
               enableSearch={false}

@@ -49,7 +49,9 @@
 /* Filters Section */
 .projects-filters {
   display: flex;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  flex-direction: row;
+  align-items: center;
   gap: 1rem;
   margin-bottom: 2rem;
   padding: 1.5rem;
@@ -60,9 +62,9 @@
 
 .filter-group {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
   gap: 0.5rem;
-  min-width: 200px;
 }
 
 .filter-group label {
@@ -123,6 +125,18 @@
   height: 16px;
   accent-color: var(--primary-color);
   cursor: pointer;
+  display: block !important; /* Override global hiding */
+  position: relative !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Additional overrides for checkbox containers in filter groups */
+.filter-group input[type="checkbox"] {
+  display: block !important;
+  position: relative !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 /* Error Message */
@@ -211,8 +225,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Responsive Design */
@@ -322,4 +340,93 @@
   outline: 2px solid var(--primary-color);
   outline-offset: 2px;
   border-radius: 4px;
+}
+
+.checkbox-wrapper {
+  display: flex !important;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  width: 100% !important;
+  padding: 8px 0;
+  overflow: visible !important;
+  min-height: 40px;
+}
+
+.checkbox-wrapper input[type="checkbox"] {
+  display: block !important; /* Override global display: none rule */
+  width: 20px !important;
+  height: 20px !important;
+  cursor: pointer;
+  accent-color: var(--primary-color);
+  transform: scale(1.2) !important;
+  flex-shrink: 0;
+  opacity: 1 !important;
+  border: 2px solid var(--primary-color);
+  visibility: visible !important;
+}
+
+.checkbox-wrapper label {
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+/* Override table cell overflow for checkbox fields */
+.field-value:has(.checkbox-wrapper) {
+  overflow: visible !important;
+  max-width: none !important;
+}
+/* Fallback for browsers that don't support :has() */
+.projects-display td.field-value {
+  overflow: visible;
+  max-width: none;
+}
+.projects-display th.field-header {
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Fix for checkbox visibility - override global display: none rule */
+.filter-group input[type="checkbox"] {
+  display: block !important; /* Override global display: none rule */
+  width: 18px !important;
+  height: 18px !important;
+  cursor: pointer;
+  accent-color: var(--primary-color);
+  transform: scale(1.2) !important;
+  flex-shrink: 0;
+  opacity: 1 !important;
+  visibility: visible !important;
+  margin-right: 8px;
+}
+
+.filter-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  color: var(--text-color);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* Ensure the filter group container allows overflow */
+.filter-group {
+  display: flex;
+  flex: 0 1 auto;
+  gap: 12px;
+  overflow: visible !important;
+}
+
+/* Alternative selector in case the structure is different */
+.projects-filters input[type="checkbox"] {
+  display: block !important;
+  width: 18px !important;
+  height: 18px !important;
+  cursor: pointer;
+  accent-color: var(--primary-color);
+  transform: scale(1.2) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
