@@ -11,7 +11,7 @@ import {
   InputFields,
 } from "@asafarim/shared";
 import "./ProjectsDisplay.css";
-import { PaginatedProjectGrid } from "@asafarim/paginated-project-grid";
+import { PaginatedProjectGrid, Project } from "@asafarim/paginated-project-grid";
 import { useTheme } from "@asafarim/react-themes";
 import { useNavigate } from "react-router-dom";
 
@@ -121,6 +121,13 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
     isAuthenticated,
     user?.id,
   ]);
+
+  useEffect(() => {
+    // Load projects when the component mounts
+    if (projects.length > 0) {
+      console.log("Projects loaded:", projects);
+    }
+  }, [projects]);
 
   const handleProjectAdded = () => {
     setShowAddProject(false);
@@ -268,61 +275,17 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
                   projectsCount:
                     typeof p.projectsCount === "number" ? p.projectsCount : 0,
                   lastUpdated: p.updatedAt || new Date().toISOString(),
-                  // Use techStack (singular) as expected by ProjectCard component
-                  techStack: Array.isArray(p.techStackIds)
-                    ? p.techStackIds.map((id) => ({
-                        name:
-                          (Array.isArray(p.techStacks)
-                            ? p.techStacks.find((ts) => ts.id === id)?.name
-                            : null) || "Unknown",
-                        icon:
-                          (Array.isArray(p.techStacks)
-                            ? p.techStacks.find((ts) => ts.id === id)?.icon
-                            : null) || "",
-                        color:
-                          (Array.isArray(p.techStacks)
-                            ? p.techStacks.find((ts) => ts.id === id)?.color
-                            : null) || "#666666",
+                  // Use techStacks (plural) as expected by ProjectCard component
+                  techStacks: Array.isArray(p.techStacks) && p.techStacks.length > 0
+                    ? p.techStacks.map((ts) => ({
+                        id: ts.id || "",
+                        name: ts.name || "Unknown",
+                        icon: ts.icon || "",
+                        color: ts.color || "#666666",
                       }))
                     : [],
-                  // Also provide techStacks for compatibility
-                  techStacks: Array.isArray(p.techStackIds)
-                    ? p.techStackIds.map((id) => ({
-                        id: id || "",
-                        name:
-                          (Array.isArray(p.techStacks)
-                            ? p.techStacks.find((ts) => ts.id === id)?.name
-                            : null) || "Unknown",
-                        icon:
-                          (Array.isArray(p.techStacks)
-                            ? p.techStacks.find((ts) => ts.id === id)?.icon
-                            : null) || "",
-                        color:
-                          (Array.isArray(p.techStacks)
-                            ? p.techStacks.find((ts) => ts.id === id)?.color
-                            : null) || "#666666",
-                      }))
-                    : [],
-                  links: [
-                    ...(p.repositoryUrl
-                      ? [
-                          {
-                            type: "repo" as const,
-                            url: p.repositoryUrl,
-                            label: "Repository",
-                          },
-                        ]
-                      : []),
-                    ...(p.liveUrl
-                      ? [
-                          {
-                            type: "demo" as const,
-                            url: p.liveUrl,
-                            label: "Live Demo",
-                          },
-                        ]
-                      : []),
-                  ],
+
+                  links: [],
                 };
 
                 return transformedProject;
@@ -351,7 +314,7 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
                 (p) =>
                   p &&
                   (showPublicOnly ? p.isPublic : true) &&
-                  (showFeaturedOnly ? p.isFeatured : true)
+                  (showFeaturedOnly ? p.featured : true)
               )}
               cardsPerPage={6}
               currentTheme={currentTheme.mode}
@@ -360,6 +323,8 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
               onProjectClick={(project: any) => {
                 navigate(`/projects/${project.id}`);
               }}
+              isLoading={isLoading}
+              animationDuration={500}
             />
           );
         } catch (error) {

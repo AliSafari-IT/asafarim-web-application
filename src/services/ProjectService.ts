@@ -355,6 +355,27 @@ export class ProjectService {
       };
     }
   }
+
+  /**
+   * Get project tech stacks for a specific project
+   */
+  static async getProjectTechStacks(projectId: string): Promise<IApiResponse<any>> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/projects/${projectId}/techstacks`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      });
+      return await handleResponse<any>(response);
+    } catch (error) {
+      console.error('Error fetching project tech stacks:', error);
+      return {
+        success: false,
+        message: 'Network error occurred while fetching project tech stacks',
+        statusCode: 0,
+        timestamp: new Date()
+      };
+    }
+  }
 }
 
 export default ProjectService;

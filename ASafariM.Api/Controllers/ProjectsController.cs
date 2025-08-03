@@ -146,7 +146,23 @@ namespace ASafariM.Api.Controllers
                         TechStackIds = p
                             .ProjectTechStacks.Select(pts => pts.TechStackId.ToString())
                             .ToList(),
-                        TechStacks = new List<TechStackDto>(), // Temporarily simplified to fix SQL error
+                        TechStacks = p.ProjectTechStacks.Select(pts => new TechStackDto
+                        {
+                            Id = pts.TechStack.Id,
+                            Name = pts.TechStack.Name,
+                            Description = pts.TechStack.Description,
+                            Category = pts.TechStack.Category,
+                            TechVersion = pts.TechStack.TechVersion ?? string.Empty,
+                            IconUrl = pts.TechStack.IconUrl ?? string.Empty,
+                            DocumentationUrl = pts.TechStack.DocumentationUrl ?? string.Empty,
+                            OfficialWebsite = pts.TechStack.OfficialWebsite ?? string.Empty,
+                            Features = new List<string>(),
+                            IsActive = pts.TechStack.IsActive,
+                            PopularityRating = 0,
+                            CreatedAt = pts.TechStack.CreatedAt,
+                            UpdatedAt = pts.TechStack.UpdatedAt,
+                            ProjectsCount = 0
+                        }).ToList(),
                     })
                     .ToListAsync();
 
@@ -226,20 +242,20 @@ namespace ASafariM.Api.Controllers
                 // Apply sorting
                 query = sortBy.ToLower() switch
                 {
-                    "title" => sortOrder.ToLower() == "asc" 
-                        ? query.OrderBy(p => p.Title) 
+                    "title" => sortOrder.ToLower() == "asc"
+                        ? query.OrderBy(p => p.Title)
                         : query.OrderByDescending(p => p.Title),
-                    "status" => sortOrder.ToLower() == "asc" 
-                        ? query.OrderBy(p => p.Status) 
+                    "status" => sortOrder.ToLower() == "asc"
+                        ? query.OrderBy(p => p.Status)
                         : query.OrderByDescending(p => p.Status),
-                    "progress" => sortOrder.ToLower() == "asc" 
-                        ? query.OrderBy(p => p.Progress) 
+                    "progress" => sortOrder.ToLower() == "asc"
+                        ? query.OrderBy(p => p.Progress)
                         : query.OrderByDescending(p => p.Progress),
-                    "createdat" or "created" => sortOrder.ToLower() == "asc" 
-                        ? query.OrderBy(p => p.CreatedAt) 
+                    "createdat" or "created" => sortOrder.ToLower() == "asc"
+                        ? query.OrderBy(p => p.CreatedAt)
                         : query.OrderByDescending(p => p.CreatedAt),
-                    _ => sortOrder.ToLower() == "asc" 
-                        ? query.OrderBy(p => p.CreatedAt) 
+                    _ => sortOrder.ToLower() == "asc"
+                        ? query.OrderBy(p => p.CreatedAt)
                         : query.OrderByDescending(p => p.CreatedAt)
                 };
 
@@ -264,7 +280,23 @@ namespace ASafariM.Api.Controllers
                         TechStackIds = p.ProjectTechStacks
                             .Select(pts => pts.TechStackId.ToString())
                             .ToList(),
-                        TechStacks = new List<TechStackDto>(), // Temporarily simplified to fix SQL error
+                        TechStacks = p.ProjectTechStacks.Select(pts => new TechStackDto
+                        {
+                            Id = pts.TechStack.Id,
+                            Name = pts.TechStack.Name,
+                            Description = pts.TechStack.Description,
+                            Category = pts.TechStack.Category,
+                            TechVersion = pts.TechStack.TechVersion ?? string.Empty,
+                            IconUrl = pts.TechStack.IconUrl ?? string.Empty,
+                            DocumentationUrl = pts.TechStack.DocumentationUrl ?? string.Empty,
+                            OfficialWebsite = pts.TechStack.OfficialWebsite ?? string.Empty,
+                            Features = new List<string>(),
+                            IsActive = pts.TechStack.IsActive,
+                            PopularityRating = 0,
+                            CreatedAt = pts.TechStack.CreatedAt,
+                            UpdatedAt = pts.TechStack.UpdatedAt,
+                            ProjectsCount = 0
+                        }).ToList(),
                     })
                     .ToListAsync();
 
@@ -913,6 +945,52 @@ namespace ASafariM.Api.Controllers
                     )
                 );
             }
+        }
+
+        // Get tech stacks for a given project id
+        [HttpGet("{id}/techstacks")]
+        public async Task<ActionResult<ApiResponse<List<TechStackDto>>>> GetTechStacksForProject(
+            Guid id
+        )
+        {
+            try
+            {
+                var project = await _context.Projects
+                    .Include(p => p.ProjectTechStacks)
+                    .ThenInclude(pts => pts.TechStack)
+                    .FirstOrDefaultAsync(p => p.Id == id && p.IsActive && !p.IsDeleted);
+
+                if (project == null)
+                {
+                    return NotFound(
+                        ApiResponse<object>.ErrorResult("Project not found.", statusCode: 404)
+                    );
+                }
+
+                var techStacks = project.ProjectTechStacks
+                    .Select(pts => new TechStackDto
+                    {
+                        Id = pts.TechStack.Id,
+                        Name = pts.TechStack.Name
+                    })
+                    .ToList();
+
+                return Ok(
+                    ApiResponse<List<TechStackDto>>.SuccessResult(techStacks)
+                );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while fetching tech stacks for project {ProjectId}", id);
+                return StatusCode(
+                    500,
+                    ApiResponse<object>.ErrorResult(
+                        "An error occurred while fetching tech stacks.",
+                        statusCode: 500
+                    )
+                );
+            }
+
         }
     }
 }
