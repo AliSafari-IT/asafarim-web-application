@@ -21,7 +21,7 @@ namespace ASafariM.Api.DTOs
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public DateTime? DueDate { get; set; }
-        
+
         [Range(0, double.MaxValue)]
         public decimal? Budget { get; set; }
 
@@ -59,7 +59,7 @@ namespace ASafariM.Api.DTOs
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public DateTime? DueDate { get; set; }
-        
+
         [Range(0, double.MaxValue)]
         public decimal? Budget { get; set; }
 
@@ -125,9 +125,12 @@ namespace ASafariM.Api.DTOs
         public string? ThumbnailUrl { get; set; }
         public bool IsPublic { get; set; }
         public bool IsFeatured { get; set; }
+        public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public string UserUsername { get; set; } = string.Empty;
+        public decimal? Budget { get; set; }
+
         public List<string> TechStackIds { get; set; } = new List<string>();
         public List<TechStackDto>? TechStacks { get; set; }
     }

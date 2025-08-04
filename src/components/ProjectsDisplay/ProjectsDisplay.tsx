@@ -14,6 +14,7 @@ import "./ProjectsDisplay.css";
 import { PaginatedProjectGrid, Project } from "@asafarim/paginated-project-grid";
 import { useTheme } from "@asafarim/react-themes";
 import { useNavigate } from "react-router-dom";
+import { ProjectTag } from "@asafarim/paginated-project-grid/dist/types";
 
 interface ProjectsDisplayProps {
   showUserProjectsOnly?: boolean;
@@ -27,7 +28,7 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
   showAddButton = false,
 }) => {
   const { isAuthenticated, user, token } = useAuth();
-  const [projects, setProjects] = useState<IProjectSummary[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [_totalCount, setTotalCount] = useState(0);
   const [_currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(12);
@@ -229,63 +230,90 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
               ?.filter((p) => p && typeof p === "object") // Filter out null/undefined projects
               ?.map((p) => {
                 // Map status to expected enum values
+                //   status?: 'active' | 'draft' | 'archived' | 'completed' | 'in-progress' | 'coming-soon' | 'planning';
                 let mappedStatus:
                   | "active"
+                  | "draft"
                   | "archived"
+                  | "completed"
                   | "in-progress"
+                  | "coming-soon"
+                  | "planning"
+                  | "draft"
+                  | "cancelled"
                   | undefined;
                 switch (p.status?.toLowerCase()) {
-                  case "completed":
-                    mappedStatus = "archived";
-                    break;
-                  case "in progress":
-                  case "planning":
-                    mappedStatus = "in-progress";
-                    break;
                   case "active":
                     mappedStatus = "active";
                     break;
-                  default:
+                  case "draft":
+                    mappedStatus = "draft";
+                    break;
+                  case "archived":
+                    mappedStatus = "archived";
+                    break;
+                  case "planning":
+                    mappedStatus = "planning";
+                    break;
+                  case "in progress":
                     mappedStatus = "in-progress";
+                    break;
+                  case "completed":
+                    mappedStatus = "completed";
+                    break;
+                  case "coming-soon":
+                    mappedStatus = "coming-soon";
+                    break;
+                  default:
+                    mappedStatus = "draft";
                 }
 
-                const transformedProject = {
+                const transformedProject: Project = {
                   id: p.id || "",
                   title: p.title || "Untitled Project",
                   description: p.description || "",
                   status: mappedStatus,
                   priority: p.priority || "Medium",
                   progress: typeof p.progress === "number" ? p.progress : 0,
-                  tags: Array.isArray(p.tags) ? p.tags : [],
+                  tags: Array.isArray(p.tags) ? p.tags.map((t) => typeof t === "string" ? 
+                  { name: t, navigateTo: `/projects/${t}` } : typeof t === "object" ?
+                  { name: t.name, navigateTo: t.navigateTo } : t) as ProjectTag[] : [],
                   thumbnailUrl: p.thumbnailUrl || "",
                   image: p.image || p.thumbnailUrl || "",
                   createdAt: p.createdAt || new Date().toISOString(),
                   updatedAt: p.updatedAt || new Date().toISOString(),
-                  userId: p.userId || p.userUsername || "",
-                  author: p.userUsername || "Unknown Author",
+                  userId: p.userId || "",
                   isPublic: Boolean(p.isPublic),
-                  isFeatured: Boolean(p.isFeatured),
-                  featured: Boolean(p.isFeatured), // Alternative property name
-                  isActive: Boolean(p.isActive),
-                  isDeleted: Boolean(p.isDeleted),
-                  repositoriesCount:
-                    typeof p.repositoriesCount === "number"
-                      ? p.repositoriesCount
-                      : 0,
-                  projectsCount:
-                    typeof p.projectsCount === "number" ? p.projectsCount : 0,
+                  featured: Boolean(p.featured),
+                  budget: p.budget || 0,
+                  budgetCurrency: p.budgetCurrency || "USD",
+                  budgetCurrencySymbol: p.budgetCurrencySymbol || "$",
+                  startDate: p.startDate || new Date().toISOString(),
+                  endDate: p.endDate || new Date().toISOString(),
+                  dueDate: p.dueDate || new Date().toISOString(),
+                  links: Array.isArray(p.links) ? p.links : [],
                   lastUpdated: p.updatedAt || new Date().toISOString(),
                   // Use techStacks (plural) as expected by ProjectCard component
                   techStacks: Array.isArray(p.techStacks) && p.techStacks.length > 0
                     ? p.techStacks.map((ts) => ({
-                        id: ts.id || "",
                         name: ts.name || "Unknown",
                         icon: ts.icon || "",
                         color: ts.color || "#666666",
                       }))
                     : [],
-
-                  links: [],
+                  category: p.category || "Other",
+                  currentTheme: currentTheme.mode,
+                  isLoading: isLoading,
+                  dateCreated: p.createdAt || new Date().toISOString(),
+                  imageAlt: p.title || "Project Image",
+                  className: "project-card",
+                  liveUrl: p.liveUrl || "",
+                  maxDescriptionLength: 100,
+                  onCardClick: () => {
+                    navigate(`/projects/${p.id}`);
+                  },
+                  showTechStackIcons: true,
+                  repositoryUrl: p.repositoryUrl || "",
                 };
 
                 return transformedProject;
@@ -316,7 +344,7 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
                   (showPublicOnly ? p.isPublic : true) &&
                   (showFeaturedOnly ? p.featured : true)
               )}
-              cardsPerPage={6}
+              cardsPerPage={3}
               currentTheme={currentTheme.mode}
               enableSearch={false}
               showTechStackIcons={true}

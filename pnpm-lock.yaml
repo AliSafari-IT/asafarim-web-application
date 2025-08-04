@@ -12,8 +12,8 @@ importers:
         specifier: ^1.1.1
         version: 1.1.1(@types/react@18.3.23)(react-dom@18.3.1(react@18.3.1))(react-router-dom@6.30.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
       '@asafarim/paginated-project-grid':
-        specifier: ^1.2.1
-        version: 1.2.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^1.3.0
+        version: 1.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@asafarim/react-themes':
         specifier: ^1.5.0
         version: 1.5.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -38,7 +38,7 @@ importers:
     devDependencies:
       '@types/node':
         specifier: ^24.1.0
-        version: 24.1.0
+        version: 24.2.0
       '@types/react':
         specifier: ^18.3.23
         version: 18.3.23
@@ -50,7 +50,7 @@ importers:
         version: 5.3.3
       '@vitejs/plugin-react':
         specifier: ^4.2.1
-        version: 4.7.0(vite@5.4.19(@types/node@24.1.0))
+        version: 4.7.0(vite@5.4.19(@types/node@24.2.0))
       concurrently:
         specifier: ^8.2.2
         version: 8.2.2
@@ -65,10 +65,10 @@ importers:
         version: 2.0.1
       typescript:
         specifier: ^5.2.2
-        version: 5.8.3
+        version: 5.9.2
       vite:
         specifier: ^5.0.8
-        version: 5.4.19(@types/node@24.1.0)
+        version: 5.4.19(@types/node@24.2.0)
 
   db-data:
     dependencies:
@@ -93,14 +93,14 @@ packages:
       react-dom: ^18.0.0
       react-router-dom: ^6.0.0
 
-  '@asafarim/paginated-project-grid@1.2.1':
-    resolution: {integrity: sha512-2f1p6w8qgas9qkFfWixkf3+QIBLGrFN8Q9y2G6MbVmUe+vnPCMySEqpJhYNzPtROG5aCa8LNkH62+UiKQpQmjw==}
+  '@asafarim/paginated-project-grid@1.3.0':
+    resolution: {integrity: sha512-ev4PgoSRUovVuOFgK8R9F0AGUGvFcu6MMtHRx1BmUu4Om9Z7N0Nb/EtUJV12hwA8NzSn9Rat7DFv90lLIpruVw==}
     peerDependencies:
       react: ^17.0.0 || ^18.0.0
       react-dom: ^17.0.0 || ^18.0.0
 
-  '@asafarim/project-card@1.1.2':
-    resolution: {integrity: sha512-VjBj6dVS8+1CEPeVWNAS3b9Hj7413/nf5d65FL8g/eobVKy/Y2q7Km849OdOmwptkycwlnVWXAF1DF+t23Wv9Q==}
+  '@asafarim/project-card@1.3.0':
+    resolution: {integrity: sha512-/pl0BtzxFM0TNYnUhmDZIgtx+0CwPt26xYYDqnXjL5RX7f5KWNaz3As+3LFurctMB5ic0XqgnclURkiEMuM+XA==}
     peerDependencies:
       react: ^17.0.0 || ^18.0.0
       react-dom: ^17.0.0 || ^18.0.0
@@ -483,8 +483,8 @@ packages:
   '@types/babel__template@7.4.4':
     resolution: {integrity: sha512-h/NUaSyG5EyxBIp8YRxo4RMe2/qQgvyowRwVMzhYhBCONbW8PUsg4lkFMrhgZhUe5z3L3MiLDuvyJ/CaPa2A8A==}
 
-  '@types/babel__traverse@7.20.7':
-    resolution: {integrity: sha512-dkO5fhS7+/oos4ciWxyEyjWe48zmG6wbCheo/G2ZnHx4fs3EU6YC6UM8rk56gAjNJ9P3MTH2jo5jb92/K6wbng==}
+  '@types/babel__traverse@7.28.0':
+    resolution: {integrity: sha512-8PvcXf70gTDZBgt9ptxJ8elBeBjcLOAcOtoO/mPJjtji1+CdGbHgm77om1GrsPxsiE+uXIpNSK64UYaIwQXd4Q==}
 
   '@types/debug@4.1.12':
     resolution: {integrity: sha512-vIChWdVG3LG1SMxEvI/AK+FWJthlrqlTu7fbrlywTkkaONwk/UAGaULXRlf8vkzFBLVm0zkMdCquhL5aOjhXPQ==}
@@ -504,8 +504,8 @@ packages:
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
 
-  '@types/node@24.1.0':
-    resolution: {integrity: sha512-ut5FthK5moxFKH2T1CUOC6ctR67rQRvvHdFLCD2Ql6KXmMuCrjsSsRI9UsLCm9M18BMwClv4pn327UvB7eeO1w==}
+  '@types/node@24.2.0':
+    resolution: {integrity: sha512-3xyG3pMCq3oYCNg7/ZP+E1ooTaGB4cG8JWRsqqOYQdbWNY4zbaV0Ennrd7stjiJEFZCaybcIgpTjJWHRfBSIDw==}
 
   '@types/prop-types@15.7.15':
     resolution: {integrity: sha512-F6bEyamV9jKGAFBEmlQnesRPGOQqS2+Uwi0Em15xenOxHaf2hv6L8YCVn3rPdPJOiJfPiCnLIRyvwVaqMY3MIw==}
@@ -726,8 +726,8 @@ packages:
   ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
 
-  electron-to-chromium@1.5.193:
-    resolution: {integrity: sha512-eePuBZXM9OVCwfYUhd2OzESeNGnWmLyeu0XAEjf7xjijNjHFdeJSzuRUGN4ueT2tEYo5YqjHramKEFxz67p3XA==}
+  electron-to-chromium@1.5.194:
+    resolution: {integrity: sha512-SdnWJwSUot04UR51I2oPD8kuP2VI37/CADR1OHsFOUzZIvfWJBO6q11k5P/uKNyTT3cdOsnyjkrZ+DDShqYqJA==}
 
   email-addresses@5.0.0:
     resolution: {integrity: sha512-4OIPYlA6JXqtVn8zpHpGiI7vE6EQOAg16aGnDMIAlZVinnoZ8208tW1hAbjWydgN/4PLTT9q+O1K6AH/vALJGw==}
@@ -1527,13 +1527,13 @@ packages:
     resolution: {integrity: sha512-TkRKr9sUTxEH8MdfuCSP7VizJyzRNMjj2J2do2Jr3Kym598JVdEksuzPQCnlFPW4ky9Q+iA+ma9BGm06XQBy8g==}
     engines: {node: '>= 0.6'}
 
-  typescript@5.8.3:
-    resolution: {integrity: sha512-p1diW6TqL9L07nNxvRMM7hMMw4c5XOo/1ibL4aAIGmSAt9slTE1Xgw5KWuof2uTOvCg9BY7ZRi+GaF+7sfgPeQ==}
+  typescript@5.9.2:
+    resolution: {integrity: sha512-CWBzXQrc/qOkhidw1OzBTQuYRbfyxDXJMVJ1XNwUHGROVmuaeiEm3OslpZ1RV96d7SKKjZKrSJu3+t/xlw3R9A==}
     engines: {node: '>=14.17'}
     hasBin: true
 
-  undici-types@7.8.0:
-    resolution: {integrity: sha512-9UJ2xGDvQ43tYyVMpuHlsgApydB8ZKfVYTsLDhXkFL/6gfkp+U8xTGdh8pMJv1SpZna0zxG1DwsKZsreLbXBxw==}
+  undici-types@7.10.0:
+    resolution: {integrity: sha512-t5Fy/nfn+14LuOc2KNYg75vZqClpAiqscVvMygNnlsHBFpSXdJaYtXMcdNLpl/Qvc3P2cB3s6lOV51nqsFq4ag==}
 
   unified@10.1.2:
     resolution: {integrity: sha512-pUSWAi/RAnVy1Pif2kAoeWNBa3JVrx0MId2LASj8G+7AiHWoKZNTomq6LG326T68U7/e263X6fTdcXIy7XnF7Q==}
@@ -1679,13 +1679,13 @@ snapshots:
       - '@types/react'
       - supports-color
 
-  '@asafarim/paginated-project-grid@1.2.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@asafarim/paginated-project-grid@1.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
-      '@asafarim/project-card': 1.1.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@asafarim/project-card': 1.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  '@asafarim/project-card@1.1.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@asafarim/project-card@1.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
@@ -1979,7 +1979,7 @@ snapshots:
       '@babel/types': 7.28.2
       '@types/babel__generator': 7.27.0
       '@types/babel__template': 7.4.4
-      '@types/babel__traverse': 7.20.7
+      '@types/babel__traverse': 7.28.0
 
   '@types/babel__generator@7.27.0':
     dependencies:
@@ -1990,7 +1990,7 @@ snapshots:
       '@babel/parser': 7.28.0
       '@babel/types': 7.28.2
 
-  '@types/babel__traverse@7.20.7':
+  '@types/babel__traverse@7.28.0':
     dependencies:
       '@babel/types': 7.28.2
 
@@ -2012,9 +2012,9 @@ snapshots:
 
   '@types/ms@2.1.0': {}
 
-  '@types/node@24.1.0':
+  '@types/node@24.2.0':
     dependencies:
-      undici-types: 7.8.0
+      undici-types: 7.10.0
 
   '@types/prop-types@15.7.15': {}
 
@@ -2040,7 +2040,7 @@ snapshots:
 
   '@types/unist@2.0.11': {}
 
-  '@vitejs/plugin-react@4.7.0(vite@5.4.19(@types/node@24.1.0))':
+  '@vitejs/plugin-react@4.7.0(vite@5.4.19(@types/node@24.2.0))':
     dependencies:
       '@babel/core': 7.28.0
       '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.28.0)
@@ -2048,7 +2048,7 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-beta.27
       '@types/babel__core': 7.20.5
       react-refresh: 0.17.0
-      vite: 5.4.19(@types/node@24.1.0)
+      vite: 5.4.19(@types/node@24.2.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -2097,7 +2097,7 @@ snapshots:
   browserslist@4.25.1:
     dependencies:
       caniuse-lite: 1.0.30001731
-      electron-to-chromium: 1.5.193
+      electron-to-chromium: 1.5.194
       node-releases: 2.0.19
       update-browserslist-db: 1.1.3(browserslist@4.25.1)
 
@@ -2229,7 +2229,7 @@ snapshots:
 
   ee-first@1.1.1: {}
 
-  electron-to-chromium@1.5.193: {}
+  electron-to-chromium@1.5.194: {}
 
   email-addresses@5.0.0: {}
 
@@ -3266,9 +3266,9 @@ snapshots:
       media-typer: 0.3.0
       mime-types: 2.1.35
 
-  typescript@5.8.3: {}
+  typescript@5.9.2: {}
 
-  undici-types@7.8.0: {}
+  undici-types@7.10.0: {}
 
   unified@10.1.2:
     dependencies:
@@ -3340,13 +3340,13 @@ snapshots:
       unist-util-stringify-position: 3.0.3
       vfile-message: 3.1.4
 
-  vite@5.4.19(@types/node@24.1.0):
+  vite@5.4.19(@types/node@24.2.0):
     dependencies:
       esbuild: 0.21.5
       postcss: 8.5.6
       rollup: 4.46.2
     optionalDependencies:
-      '@types/node': 24.1.0
+      '@types/node': 24.2.0
       fsevents: 2.3.3
 
   web-streams-polyfill@3.3.3: {}

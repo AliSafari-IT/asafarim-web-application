@@ -135,7 +135,7 @@ namespace ASafariM.Api.Controllers
                         Description = p.Description,
                         Status = p.Status,
                         Priority = p.Priority,
-                        Progress = p.Progress,
+                        Progress = p?.Progress,
                         Tags = p.Tags,
                         ThumbnailUrl = p.ThumbnailUrl,
                         IsPublic = p.IsPublic,
@@ -143,26 +143,30 @@ namespace ASafariM.Api.Controllers
                         CreatedAt = p.CreatedAt,
                         UpdatedAt = p.UpdatedAt,
                         UserUsername = p.User != null ? p.User.Username : string.Empty,
+                        Budget = p.Budget,
+                        IsActive = p.IsActive,
                         TechStackIds = p
                             .ProjectTechStacks.Select(pts => pts.TechStackId.ToString())
                             .ToList(),
-                        TechStacks = p.ProjectTechStacks.Select(pts => new TechStackDto
-                        {
-                            Id = pts.TechStack.Id,
-                            Name = pts.TechStack.Name,
-                            Description = pts.TechStack.Description,
-                            Category = pts.TechStack.Category,
-                            TechVersion = pts.TechStack.TechVersion ?? string.Empty,
-                            IconUrl = pts.TechStack.IconUrl ?? string.Empty,
-                            DocumentationUrl = pts.TechStack.DocumentationUrl ?? string.Empty,
-                            OfficialWebsite = pts.TechStack.OfficialWebsite ?? string.Empty,
-                            Features = new List<string>(),
-                            IsActive = pts.TechStack.IsActive,
-                            PopularityRating = 0,
-                            CreatedAt = pts.TechStack.CreatedAt,
-                            UpdatedAt = pts.TechStack.UpdatedAt,
-                            ProjectsCount = 0
-                        }).ToList(),
+                        TechStacks = p
+                            .ProjectTechStacks.Select(pts => new TechStackDto
+                            {
+                                Id = pts.TechStack.Id,
+                                Name = pts.TechStack.Name,
+                                Description = pts.TechStack.Description,
+                                Category = pts.TechStack.Category,
+                                TechVersion = pts.TechStack.TechVersion ?? string.Empty,
+                                IconUrl = pts.TechStack.IconUrl ?? string.Empty,
+                                DocumentationUrl = pts.TechStack.DocumentationUrl ?? string.Empty,
+                                OfficialWebsite = pts.TechStack.OfficialWebsite ?? string.Empty,
+                                Features = new List<string>(),
+                                IsActive = pts.TechStack.IsActive,
+                                PopularityRating = 0,
+                                CreatedAt = pts.TechStack.CreatedAt,
+                                UpdatedAt = pts.TechStack.UpdatedAt,
+                                ProjectsCount = 0,
+                            })
+                            .ToList(),
                     })
                     .ToListAsync();
 
@@ -256,7 +260,7 @@ namespace ASafariM.Api.Controllers
                         : query.OrderByDescending(p => p.CreatedAt),
                     _ => sortOrder.ToLower() == "asc"
                         ? query.OrderBy(p => p.CreatedAt)
-                        : query.OrderByDescending(p => p.CreatedAt)
+                        : query.OrderByDescending(p => p.CreatedAt),
                 };
 
                 var projects = await query
@@ -277,26 +281,28 @@ namespace ASafariM.Api.Controllers
                         CreatedAt = p.CreatedAt,
                         UpdatedAt = p.UpdatedAt,
                         UserUsername = p.User != null ? p.User.Username : string.Empty,
-                        TechStackIds = p.ProjectTechStacks
-                            .Select(pts => pts.TechStackId.ToString())
+                        TechStackIds = p
+                            .ProjectTechStacks.Select(pts => pts.TechStackId.ToString())
                             .ToList(),
-                        TechStacks = p.ProjectTechStacks.Select(pts => new TechStackDto
-                        {
-                            Id = pts.TechStack.Id,
-                            Name = pts.TechStack.Name,
-                            Description = pts.TechStack.Description,
-                            Category = pts.TechStack.Category,
-                            TechVersion = pts.TechStack.TechVersion ?? string.Empty,
-                            IconUrl = pts.TechStack.IconUrl ?? string.Empty,
-                            DocumentationUrl = pts.TechStack.DocumentationUrl ?? string.Empty,
-                            OfficialWebsite = pts.TechStack.OfficialWebsite ?? string.Empty,
-                            Features = new List<string>(),
-                            IsActive = pts.TechStack.IsActive,
-                            PopularityRating = 0,
-                            CreatedAt = pts.TechStack.CreatedAt,
-                            UpdatedAt = pts.TechStack.UpdatedAt,
-                            ProjectsCount = 0
-                        }).ToList(),
+                        TechStacks = p
+                            .ProjectTechStacks.Select(pts => new TechStackDto
+                            {
+                                Id = pts.TechStack.Id,
+                                Name = pts.TechStack.Name,
+                                Description = pts.TechStack.Description,
+                                Category = pts.TechStack.Category,
+                                TechVersion = pts.TechStack.TechVersion ?? string.Empty,
+                                IconUrl = pts.TechStack.IconUrl ?? string.Empty,
+                                DocumentationUrl = pts.TechStack.DocumentationUrl ?? string.Empty,
+                                OfficialWebsite = pts.TechStack.OfficialWebsite ?? string.Empty,
+                                Features = new List<string>(),
+                                IsActive = pts.TechStack.IsActive,
+                                PopularityRating = 0,
+                                CreatedAt = pts.TechStack.CreatedAt,
+                                UpdatedAt = pts.TechStack.UpdatedAt,
+                                ProjectsCount = 0,
+                            })
+                            .ToList(),
                     })
                     .ToListAsync();
 
@@ -955,8 +961,8 @@ namespace ASafariM.Api.Controllers
         {
             try
             {
-                var project = await _context.Projects
-                    .Include(p => p.ProjectTechStacks)
+                var project = await _context
+                    .Projects.Include(p => p.ProjectTechStacks)
                     .ThenInclude(pts => pts.TechStack)
                     .FirstOrDefaultAsync(p => p.Id == id && p.IsActive && !p.IsDeleted);
 
@@ -967,21 +973,23 @@ namespace ASafariM.Api.Controllers
                     );
                 }
 
-                var techStacks = project.ProjectTechStacks
-                    .Select(pts => new TechStackDto
+                var techStacks = project
+                    .ProjectTechStacks.Select(pts => new TechStackDto
                     {
                         Id = pts.TechStack.Id,
-                        Name = pts.TechStack.Name
+                        Name = pts.TechStack.Name,
                     })
                     .ToList();
 
-                return Ok(
-                    ApiResponse<List<TechStackDto>>.SuccessResult(techStacks)
-                );
+                return Ok(ApiResponse<List<TechStackDto>>.SuccessResult(techStacks));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while fetching tech stacks for project {ProjectId}", id);
+                _logger.LogError(
+                    ex,
+                    "Error occurred while fetching tech stacks for project {ProjectId}",
+                    id
+                );
                 return StatusCode(
                     500,
                     ApiResponse<object>.ErrorResult(
@@ -990,7 +998,6 @@ namespace ASafariM.Api.Controllers
                     )
                 );
             }
-
         }
     }
 }
