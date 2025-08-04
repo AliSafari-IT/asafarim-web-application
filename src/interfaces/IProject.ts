@@ -54,6 +54,7 @@ export interface ICreateProject {
   description?: string;
   status?: string;
   priority?: string;
+  progress?: number;
   startDate?: string;
   endDate?: string;
   dueDate?: string;

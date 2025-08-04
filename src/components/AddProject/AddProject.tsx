@@ -12,6 +12,7 @@ interface FormErrors {
   description?: string;
   status?: string;
   priority?: string;
+  progress?: string;
   startDate?: string;
   endDate?: string;
   dueDate?: string;
@@ -41,6 +42,7 @@ const AddProject: React.FC<AddProjectProps> = ({ onProjectAdded, onCancel }) => 
     description: '',
     status: 'Planning',
     priority: 'Medium',
+    progress: 0,
     startDate: '',
     endDate: '',
     dueDate: '',
@@ -53,6 +55,7 @@ const AddProject: React.FC<AddProjectProps> = ({ onProjectAdded, onCancel }) => 
     isFeatured: false,
     techStackIds: []
   });
+
   const [tagInput, setTagInput] = useState('');
   const [techStacks, setTechStacks] = useState<ITechStack[]>([]);
   const [isLoadingTechStacks, setIsLoadingTechStacks] = useState(false);
@@ -74,6 +77,7 @@ const AddProject: React.FC<AddProjectProps> = ({ onProjectAdded, onCancel }) => 
               description: project.description || '',
               status: project.status,
               priority: project.priority,
+              progress: project.progress,
               startDate: project.startDate ? new Date(project.startDate).toISOString().split('T')[0] : '',
               endDate: project.endDate ? new Date(project.endDate).toISOString().split('T')[0] : '',
               dueDate: project.dueDate ? new Date(project.dueDate).toISOString().split('T')[0] : '',
@@ -479,9 +483,26 @@ const AddProject: React.FC<AddProjectProps> = ({ onProjectAdded, onCancel }) => 
             className={errors.budget ? 'error' : ''}
             placeholder="Enter project budget"
             min="0"
-            step="0.01"
+            step="10"
           />
           {errors.budget && <span className="error-message">{errors.budget}</span>}
+        </div>
+
+        {/* Progress */}
+        <div className="form-group">
+          <label htmlFor="progress">Progress</label>
+          <input
+            type="number"
+            id="progress"
+            name="progress"
+            value={formData.progress}
+            onChange={handleInputChange}
+            className={errors.progress ? 'error' : ''}
+            placeholder="Enter project progress"
+            min="0"
+            max="100"
+          />
+          {errors.progress && <span className="error-message">{errors.progress}</span>}
         </div>
 
         {/* Tags */}
