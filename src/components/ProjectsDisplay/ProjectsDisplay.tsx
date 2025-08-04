@@ -284,7 +284,7 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
                   updatedAt: p.updatedAt || new Date().toISOString(),
                   userId: p.userId || "",
                   isPublic: Boolean(p.isPublic),
-                  featured: Boolean(p.featured),
+                  isFeatured: Boolean(p.isFeatured),
                   budget: p.budget || 0,
                   budgetCurrency: p.budgetCurrency || "USD",
                   budgetCurrencySymbol: p.budgetCurrencySymbol || "$",
@@ -342,7 +342,7 @@ const ProjectsDisplay: React.FC<ProjectsDisplayProps> = ({
                 (p) =>
                   p &&
                   (showPublicOnly ? p.isPublic : true) &&
-                  (showFeaturedOnly ? p.featured : true)
+                  (showFeaturedOnly ? p.isFeatured : true)
               )}
               cardsPerPage={3}
               currentTheme={currentTheme.mode}
