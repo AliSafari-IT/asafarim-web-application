@@ -3,6 +3,7 @@ using System.Security.Claims;
 using ASafariM.Api.Data;
 using ASafariM.Api.DTOs;
 using ASafariM.Api.Models;
+using ASafariM.Api.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -98,7 +99,7 @@ namespace ASafariM.Api.Controllers
                     {
                         Id = u.Id,
                         Username = u.Username,
-                        Email = u.Email, // You might want to hide this for privacy
+                        Email = u.Email,
                         FirstName = u.FirstName,
                         LastName = u.LastName,
                         Avatar = u.Avatar,
@@ -107,12 +108,8 @@ namespace ASafariM.Api.Controllers
                         Location = u.Location,
                         IsEmailVerified = u.IsEmailVerified,
                         CreatedAt = u.CreatedAt,
-                        ProjectsCount = u.Projects.Count(p =>
-                            p.IsActive && !p.IsDeleted && p.IsPublic
-                        ),
-                        RepositoriesCount = u.Repositories.Count(r =>
-                            r.IsActive && !r.IsDeleted && !r.IsPrivate
-                        ),
+                        ProjectsCount = u.Projects.Count(p => p.IsActive && !p.IsDeleted),
+                        RepositoriesCount = u.Repositories.Count(r => r.IsActive && !r.IsDeleted),
                     })
                     .FirstOrDefaultAsync();
 
@@ -123,9 +120,6 @@ namespace ASafariM.Api.Controllers
                     );
                 }
 
-                // Hide email for public profiles
-                user.Email = string.Empty;
-
                 return Ok(
                     ApiResponse<UserProfileDto>.SuccessResult(
                         user,
@@ -135,11 +129,7 @@ namespace ASafariM.Api.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(
-                    ex,
-                    "Error occurred while retrieving user profile for {Username}",
-                    username
-                );
+                _logger.LogError(ex, "Error occurred while retrieving user profile");
                 return StatusCode(
                     500,
                     ApiResponse<UserProfileDto>.ErrorResult(
@@ -161,9 +151,7 @@ namespace ASafariM.Api.Controllers
                     .Where(x => x.Value?.Errors.Count > 0)
                     .ToDictionary(
                         kvp => kvp.Key,
-                        kvp =>
-                            kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray()
-                            ?? Array.Empty<string>()
+                        kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray() ?? Array.Empty<string>()
                     );
 
                 return BadRequest(
@@ -173,10 +161,7 @@ namespace ASafariM.Api.Controllers
 
             try
             {
-                var userId =
-                    User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-                    ?? User?.FindFirst("sub")?.Value
-                    ?? User?.FindFirst("id")?.Value;
+                var userId = User?.FindFirst("sub")?.Value ?? User?.FindFirst("id")?.Value;
                 if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
                 {
                     return Unauthorized(
@@ -184,9 +169,8 @@ namespace ASafariM.Api.Controllers
                     );
                 }
 
-                var user = await _context.Users.FirstOrDefaultAsync(u =>
-                    u.Id == userGuid && u.IsActive && !u.IsDeleted
-                );
+                var user = await _context
+                    .Users.FirstOrDefaultAsync(u => u.Id == userGuid && u.IsActive && !u.IsDeleted);
 
                 if (user == null)
                 {
@@ -196,32 +180,25 @@ namespace ASafariM.Api.Controllers
                 }
 
                 // Update only provided fields
-                if (updateProfileDto.FirstName != null)
+                if (!string.IsNullOrEmpty(updateProfileDto.FirstName))
                     user.FirstName = updateProfileDto.FirstName;
 
-                if (updateProfileDto.LastName != null)
+                if (!string.IsNullOrEmpty(updateProfileDto.LastName))
                     user.LastName = updateProfileDto.LastName;
 
-                if (updateProfileDto.Bio != null)
+                if (!string.IsNullOrEmpty(updateProfileDto.Bio))
                     user.Bio = updateProfileDto.Bio;
 
-                if (updateProfileDto.Website != null)
+                if (!string.IsNullOrEmpty(updateProfileDto.Website))
                     user.Website = updateProfileDto.Website;
 
-                if (updateProfileDto.Location != null)
+                if (!string.IsNullOrEmpty(updateProfileDto.Location))
                     user.Location = updateProfileDto.Location;
 
-                if (updateProfileDto.Avatar != null)
+                if (!string.IsNullOrEmpty(updateProfileDto.Avatar))
                     user.Avatar = updateProfileDto.Avatar;
 
-                if (updateProfileDto.Email != null)
-                    user.Email = updateProfileDto.Email;
-
-                if (updateProfileDto.Role != null)
-                    user.Role = updateProfileDto.Role;
-
-                if (updateProfileDto.IsActive.HasValue)
-                    user.IsActive = updateProfileDto.IsActive.Value;
+                user.UpdatedAt = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();
 
@@ -236,13 +213,9 @@ namespace ASafariM.Api.Controllers
                     Bio = user.Bio,
                     Website = user.Website,
                     Location = user.Location,
-                    Role = user.Role,
                     IsEmailVerified = user.IsEmailVerified,
-                    EmailVerifiedAt = user.EmailVerifiedAt,
-                    LastLoginAt = user.LastLoginAt,
                     CreatedAt = user.CreatedAt,
                     UpdatedAt = user.UpdatedAt,
-                    IsActive = user.IsActive,
                 };
 
                 return Ok(
@@ -267,44 +240,48 @@ namespace ASafariM.Api.Controllers
         {
             try
             {
-                var userId =
-                    User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-                    ?? User?.FindFirst("sub")?.Value
-                    ?? User?.FindFirst("id")?.Value;
+                var userId = User?.FindFirst("sub")?.Value ?? User?.FindFirst("id")?.Value;
                 if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
                 {
                     return Unauthorized(
-                        ApiResponse<UserPreferencesDto>.ErrorResult(
-                            "Invalid token.",
-                            statusCode: 401
-                        )
+                        ApiResponse<UserPreferencesDto>.ErrorResult("Invalid token.", statusCode: 401)
                     );
                 }
 
                 var preferences = await _context
-                    .UserPreferences.Where(up =>
-                        up.UserId == userGuid && up.IsActive && !up.IsDeleted
-                    )
-                    .FirstOrDefaultAsync();
+                    .UserPreferences.Include(up => up.User)
+                    .FirstOrDefaultAsync(up => up.UserId == userGuid);
 
-                UserPreferencesDto preferencesDto;
                 if (preferences == null)
                 {
-                    // Return default preferences if none exist
-                    preferencesDto = new UserPreferencesDto();
-                }
-                else
-                {
-                    preferencesDto = new UserPreferencesDto
+                    // Create default preferences if none exist
+                    preferences = new UserPreferences
                     {
-                        Theme = preferences.Theme,
-                        Language = preferences.Language,
-                        Timezone = preferences.Timezone,
-                        EmailNotifications = preferences.EmailNotifications,
-                        PushNotifications = preferences.PushNotifications,
-                        ProjectVisibility = preferences.ProjectVisibility,
+                        UserId = userGuid,
+                        Theme = "light",
+                        Language = "en",
+                        Timezone = "UTC",
+                        EmailNotifications = true,
+                        PushNotifications = true,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow,
                     };
+
+                    _context.UserPreferences.Add(preferences);
+                    await _context.SaveChangesAsync();
                 }
+
+                var preferencesDto = new UserPreferencesDto
+                {
+                    Id = preferences.Id,
+                    Theme = preferences.Theme,
+                    Language = preferences.Language,
+                    Timezone = preferences.Timezone,
+                    EmailNotifications = preferences.EmailNotifications,
+                    PushNotifications = preferences.PushNotifications,
+                    CreatedAt = preferences.CreatedAt,
+                    UpdatedAt = preferences.UpdatedAt,
+                };
 
                 return Ok(
                     ApiResponse<UserPreferencesDto>.SuccessResult(
@@ -331,79 +308,70 @@ namespace ASafariM.Api.Controllers
             [FromBody] UpdateUserPreferencesDto updatePreferencesDto
         )
         {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState
+                    .Where(x => x.Value?.Errors.Count > 0)
+                    .ToDictionary(
+                        kvp => kvp.Key,
+                        kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray() ?? Array.Empty<string>()
+                    );
+
+                return BadRequest(
+                    ApiResponse<UserPreferencesDto>.ErrorResult("Validation failed.", errors, 400)
+                );
+            }
+
             try
             {
-                var userId =
-                    User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-                    ?? User?.FindFirst("sub")?.Value
-                    ?? User?.FindFirst("id")?.Value;
+                var userId = User?.FindFirst("sub")?.Value ?? User?.FindFirst("id")?.Value;
                 if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
                 {
                     return Unauthorized(
-                        ApiResponse<UserPreferencesDto>.ErrorResult(
-                            "Invalid token.",
-                            statusCode: 401
-                        )
+                        ApiResponse<UserPreferencesDto>.ErrorResult("Invalid token.", statusCode: 401)
                     );
                 }
 
                 var preferences = await _context
-                    .UserPreferences.Where(up =>
-                        up.UserId == userGuid && up.IsActive && !up.IsDeleted
-                    )
-                    .FirstOrDefaultAsync();
+                    .UserPreferences.FirstOrDefaultAsync(up => up.UserId == userGuid);
 
                 if (preferences == null)
                 {
-                    // Create new preferences if none exist
-                    preferences = new UserPreferences
-                    {
-                        UserId = userGuid,
-                        Theme = updatePreferencesDto.Theme ?? "light",
-                        Language = updatePreferencesDto.Language ?? "en",
-                        Timezone = updatePreferencesDto.Timezone ?? "UTC",
-                        EmailNotifications = updatePreferencesDto.EmailNotifications ?? true,
-                        PushNotifications = updatePreferencesDto.PushNotifications ?? true,
-                        ProjectVisibility = updatePreferencesDto.ProjectVisibility ?? "public",
-                    };
-                    _context.UserPreferences.Add(preferences);
+                    return NotFound(
+                        ApiResponse<UserPreferencesDto>.ErrorResult("User preferences not found.", statusCode: 404)
+                    );
                 }
-                else
-                {
-                    // Update existing preferences
-                    if (updatePreferencesDto.Theme != null)
-                        preferences.Theme = updatePreferencesDto.Theme;
 
-                    if (updatePreferencesDto.Language != null)
-                        preferences.Language = updatePreferencesDto.Language;
+                // Update only provided fields
+                if (!string.IsNullOrEmpty(updatePreferencesDto.Theme))
+                    preferences.Theme = updatePreferencesDto.Theme;
 
-                    if (updatePreferencesDto.Timezone != null)
-                        preferences.Timezone = updatePreferencesDto.Timezone;
+                if (!string.IsNullOrEmpty(updatePreferencesDto.Language))
+                    preferences.Language = updatePreferencesDto.Language;
 
-                    if (updatePreferencesDto.EmailNotifications.HasValue)
-                        preferences.EmailNotifications = updatePreferencesDto
-                            .EmailNotifications
-                            .Value;
+                if (!string.IsNullOrEmpty(updatePreferencesDto.Timezone))
+                    preferences.Timezone = updatePreferencesDto.Timezone;
 
-                    if (updatePreferencesDto.PushNotifications.HasValue)
-                        preferences.PushNotifications = updatePreferencesDto
-                            .PushNotifications
-                            .Value;
+                if (updatePreferencesDto.EmailNotifications.HasValue)
+                    preferences.EmailNotifications = updatePreferencesDto.EmailNotifications.Value;
 
-                    if (updatePreferencesDto.ProjectVisibility != null)
-                        preferences.ProjectVisibility = updatePreferencesDto.ProjectVisibility;
-                }
+                if (updatePreferencesDto.PushNotifications.HasValue)
+                    preferences.PushNotifications = updatePreferencesDto.PushNotifications.Value;
+
+                preferences.UpdatedAt = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();
 
                 var preferencesDto = new UserPreferencesDto
                 {
+                    Id = preferences.Id,
                     Theme = preferences.Theme,
                     Language = preferences.Language,
                     Timezone = preferences.Timezone,
                     EmailNotifications = preferences.EmailNotifications,
                     PushNotifications = preferences.PushNotifications,
-                    ProjectVisibility = preferences.ProjectVisibility,
+                    CreatedAt = preferences.CreatedAt,
+                    UpdatedAt = preferences.UpdatedAt,
                 };
 
                 return Ok(
@@ -436,27 +404,22 @@ namespace ASafariM.Api.Controllers
         {
             try
             {
-                var userId =
-                    User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-                    ?? User?.FindFirst("sub")?.Value
-                    ?? User?.FindFirst("id")?.Value;
+                var userId = User?.FindFirst("sub")?.Value ?? User?.FindFirst("id")?.Value;
                 if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
                 {
                     return Unauthorized(
-                        ApiResponse<List<ProjectSummaryDto>>.ErrorResult(
-                            "Invalid token.",
-                            statusCode: 401
-                        )
+                        ApiResponse<List<ProjectSummaryDto>>.ErrorResult("Invalid token.", statusCode: 401)
                     );
                 }
 
                 var query = _context
                     .Projects.Include(p => p.User)
                     .Include(p => p.ProjectTechStacks)
-                        .ThenInclude(pts => pts.TechStack)
-                    .Where(p => p.UserId == userGuid && p.IsActive && !p.IsDeleted);
+                    .ThenInclude(pts => pts.TechStack)
+                    .Where(p => p.UserId == userGuid && p.IsActive && !p.IsDeleted)
+                    .AsQueryable();
 
-                // Apply filters
+                // Apply search filter
                 if (!string.IsNullOrEmpty(search))
                 {
                     query = query.Where(p =>
@@ -500,9 +463,18 @@ namespace ASafariM.Api.Controllers
                             {
                                 Id = pts.TechStack.Id,
                                 Name = pts.TechStack.Name,
-                                Category = pts.TechStack.Category,
                                 Description = pts.TechStack.Description,
+                                Category = pts.TechStack.Category,
+                                TechVersion = pts.TechStack.TechVersion ?? string.Empty,
+                                IconUrl = pts.TechStack.IconUrl ?? string.Empty,
+                                DocumentationUrl = pts.TechStack.DocumentationUrl ?? string.Empty,
+                                OfficialWebsite = pts.TechStack.OfficialWebsite ?? string.Empty,
+                                Features = new List<string>(),
                                 IsActive = pts.TechStack.IsActive,
+                                PopularityRating = 0,
+                                CreatedAt = pts.TechStack.CreatedAt,
+                                UpdatedAt = pts.TechStack.UpdatedAt,
+                                ProjectsCount = 0,
                             })
                             .ToList(),
                     })
@@ -550,19 +522,17 @@ namespace ASafariM.Api.Controllers
                 if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
                 {
                     return Unauthorized(
-                        ApiResponse<List<RepositoryDto>>.ErrorResult(
-                            "Invalid token.",
-                            statusCode: 401
-                        )
+                        ApiResponse<List<RepositoryDto>>.ErrorResult("Invalid token.", statusCode: 401)
                     );
                 }
 
                 var query = _context
                     .Repositories.Include(r => r.User)
                     .Include(r => r.Project)
-                    .Where(r => r.UserId == userGuid && r.IsActive && !r.IsDeleted);
+                    .Where(r => r.UserId == userGuid && r.IsActive && !r.IsDeleted)
+                    .AsQueryable();
 
-                // Apply filters
+                // Apply search filter
                 if (!string.IsNullOrEmpty(search))
                 {
                     query = query.Where(r =>
@@ -571,11 +541,13 @@ namespace ASafariM.Api.Controllers
                     );
                 }
 
+                // Apply language filter
                 if (!string.IsNullOrEmpty(language))
                 {
                     query = query.Where(r => r.Language == language);
                 }
 
+                // Apply privacy filter
                 if (isPrivate.HasValue)
                 {
                     query = query.Where(r => r.IsPrivate == isPrivate.Value);
@@ -611,7 +583,7 @@ namespace ASafariM.Api.Controllers
                         UserId = r.UserId,
                         UserUsername = r.User != null ? r.User.Username : string.Empty,
                         ProjectId = r.ProjectId,
-                        ProjectTitle = r.Project != null ? r.Project.Title : string.Empty,
+                        ProjectTitle = r.Project != null ? r.Project.Title : null,
                     })
                     .ToListAsync();
 
@@ -639,7 +611,6 @@ namespace ASafariM.Api.Controllers
             }
         }
 
-        // Admin-only endpoints
         [HttpGet("admin/all")]
         public async Task<ActionResult<PaginatedResponse<UserDto>>> GetAllUsersForAdmin(
             [FromQuery] int page = 1,
@@ -652,110 +623,46 @@ namespace ASafariM.Api.Controllers
         {
             try
             {
-                var currentUserId =
-                    User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                    ?? User?.FindFirst("sub")?.Value
-                    ?? User?.FindFirst("id")?.Value;
-                if (
-                    string.IsNullOrEmpty(currentUserId)
-                    || !Guid.TryParse(currentUserId, out var currentUserGuid)
-                )
-                {
-                    return Unauthorized(
-                        ApiResponse<PaginatedResponse<UserDto>>.ErrorResult("Invalid token.", statusCode: 401)
-                    );
-                }
-
-                // Handle role claims (can be array in JWT) - try multiple claim types
-                var roleClaims = new List<string>();
-
-                // Try different possible role claim types
-                var roleClaimTypes = new[]
-                {
-                    "role",
-                    "roles",
-                    "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
-                    ClaimTypes.Role,
-                };
-
-                foreach (var claimType in roleClaimTypes)
-                {
-                    var claims =
-                        User?.FindAll(claimType)?.Select(c => c.Value).ToList()
-                        ?? new List<string>();
-                    if (claims.Any())
-                    {
-                        _logger.LogInformation(
-                            "GetAllUsersForAdmin - Found roles in claim type '{ClaimType}': {Roles}",
-                            claimType,
-                            string.Join(", ", claims)
-                        );
-                        roleClaims.AddRange(claims);
-                    }
-                }
-
-                var isAdmin =
-                    roleClaims.Contains("Admin")
-                    || roleClaims.Contains("SuperAdmin")
-                    || roleClaims.Contains("admin")
-                    || roleClaims.Contains("superadmin");
-
-                if (!isAdmin)
-                {
-                    _logger.LogWarning(
-                        "GetAllUsersForAdmin Access Denied - User {CurrentUserId} is not an admin",
-                        currentUserGuid
-                    );
-                    return Forbid();
-                }
-
-                // Build query
-                var query = _context.Users
-                    .Where(u => u.IsActive && !u.IsDeleted)
-                    .AsQueryable();
+                var query = _context.Users.AsQueryable();
 
                 // Apply search filter
-                if (!string.IsNullOrWhiteSpace(searchTerm))
+                if (!string.IsNullOrEmpty(searchTerm))
                 {
                     query = query.Where(u =>
-                        u.Username.Contains(searchTerm) ||
-                        u.Email.Contains(searchTerm) ||
-                        (u.FirstName != null && u.FirstName.Contains(searchTerm)) ||
-                        (u.LastName != null && u.LastName.Contains(searchTerm))
+                        u.Username.Contains(searchTerm)
+                        || u.Email.Contains(searchTerm)
+                        || (u.FirstName != null && u.FirstName.Contains(searchTerm))
+                        || (u.LastName != null && u.LastName.Contains(searchTerm))
                     );
                 }
 
-                // Apply role filter
-                if (!string.IsNullOrWhiteSpace(role))
+                // Apply role filter (if implemented)
+                if (!string.IsNullOrEmpty(role))
                 {
-                    query = query.Where(u => u.Role == role);
+                    // This would need to be implemented based on your role system
+                    // For now, we'll skip role filtering
                 }
+
+                var totalCount = await query.CountAsync();
+                var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
 
                 // Apply sorting
                 query = sortBy.ToLower() switch
                 {
-                    "username" => sortOrder.ToLower() == "asc" 
-                        ? query.OrderBy(u => u.Username) 
+                    "username" => sortOrder.ToLower() == "asc"
+                        ? query.OrderBy(u => u.Username)
                         : query.OrderByDescending(u => u.Username),
-                    "email" => sortOrder.ToLower() == "asc" 
-                        ? query.OrderBy(u => u.Email) 
+                    "email" => sortOrder.ToLower() == "asc"
+                        ? query.OrderBy(u => u.Email)
                         : query.OrderByDescending(u => u.Email),
-                    "role" => sortOrder.ToLower() == "asc" 
-                        ? query.OrderBy(u => u.Role) 
-                        : query.OrderByDescending(u => u.Role),
-                    "createdat" or "created" => sortOrder.ToLower() == "asc" 
-                        ? query.OrderBy(u => u.CreatedAt) 
+                    "createdat" or "created" => sortOrder.ToLower() == "asc"
+                        ? query.OrderBy(u => u.CreatedAt)
                         : query.OrderByDescending(u => u.CreatedAt),
-                    _ => sortOrder.ToLower() == "asc" 
-                        ? query.OrderBy(u => u.CreatedAt) 
-                        : query.OrderByDescending(u => u.CreatedAt)
+                    _ => sortOrder.ToLower() == "asc"
+                        ? query.OrderBy(u => u.CreatedAt)
+                        : query.OrderByDescending(u => u.CreatedAt),
                 };
 
-                // Get total count for pagination
-                var totalCount = await query.CountAsync();
-                var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
-
-                // Apply pagination and select
                 var users = await query
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
@@ -770,13 +677,9 @@ namespace ASafariM.Api.Controllers
                         Bio = u.Bio,
                         Website = u.Website,
                         Location = u.Location,
-                        Role = u.Role,
                         IsEmailVerified = u.IsEmailVerified,
-                        EmailVerifiedAt = u.EmailVerifiedAt,
-                        LastLoginAt = u.LastLoginAt,
                         CreatedAt = u.CreatedAt,
                         UpdatedAt = u.UpdatedAt,
-                        IsActive = u.IsActive,
                     })
                     .ToListAsync();
 
@@ -786,7 +689,7 @@ namespace ASafariM.Api.Controllers
                     totalPages,
                     totalCount,
                     pageSize,
-                    "Users retrieved successfully for admin."
+                    $"Admin: Retrieved {users.Count} of {totalCount} users successfully."
                 );
 
                 return Ok(response);
@@ -796,8 +699,8 @@ namespace ASafariM.Api.Controllers
                 _logger.LogError(ex, "Error occurred while retrieving users for admin");
                 return StatusCode(
                     500,
-                    ApiResponse<PaginatedResponse<UserDto>>.ErrorResult(
-                        "An error occurred while retrieving users.",
+                    ApiResponse<List<UserDto>>.ErrorResult(
+                        "An error occurred while retrieving users for admin.",
                         statusCode: 500
                     )
                 );
@@ -816,9 +719,7 @@ namespace ASafariM.Api.Controllers
                     .Where(x => x.Value?.Errors.Count > 0)
                     .ToDictionary(
                         kvp => kvp.Key,
-                        kvp =>
-                            kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray()
-                            ?? Array.Empty<string>()
+                        kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray() ?? Array.Empty<string>()
                     );
 
                 return BadRequest(
@@ -828,66 +729,34 @@ namespace ASafariM.Api.Controllers
 
             try
             {
-                var currentUserId =
-                    User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                    ?? User?.FindFirst("sub")?.Value
-                    ?? User?.FindFirst("id")?.Value;
-                if (
-                    string.IsNullOrEmpty(currentUserId)
-                    || !Guid.TryParse(currentUserId, out var currentUserGuid)
-                )
+                var adminUserId = User?.FindFirst("sub")?.Value ?? User?.FindFirst("id")?.Value;
+                if (string.IsNullOrEmpty(adminUserId) || !Guid.TryParse(adminUserId, out var adminUserGuid))
                 {
                     return Unauthorized(
                         ApiResponse<UserDto>.ErrorResult("Invalid token.", statusCode: 401)
                     );
                 }
 
-                // Handle role claims (can be array in JWT) - try multiple claim types
-                var roleClaims = new List<string>();
+                // Check if admin user exists and has admin role
+                var adminUser = await _context
+                    .Users.FirstOrDefaultAsync(u => u.Id == adminUserGuid && u.IsActive && !u.IsDeleted);
 
-                // Try different possible role claim types
-                var roleClaimTypes = new[]
+                if (adminUser == null)
                 {
-                    "role",
-                    "roles",
-                    "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
-                    ClaimTypes.Role,
-                };
-
-                foreach (var claimType in roleClaimTypes)
-                {
-                    var claims =
-                        User?.FindAll(claimType)?.Select(c => c.Value).ToList()
-                        ?? new List<string>();
-                    if (claims.Any())
-                    {
-                        _logger.LogInformation(
-                            "AdminUpdateUserProfile - Found roles in claim type '{ClaimType}': {Roles}",
-                            claimType,
-                            string.Join(", ", claims)
-                        );
-                        roleClaims.AddRange(claims);
-                    }
+                    return Unauthorized(
+                        ApiResponse<UserDto>.ErrorResult("Admin user not found.", statusCode: 401)
+                    );
                 }
 
-                var isAdmin =
-                    roleClaims.Contains("Admin")
-                    || roleClaims.Contains("SuperAdmin")
-                    || roleClaims.Contains("admin")
-                    || roleClaims.Contains("superadmin");
-
+                // Check if user is admin (you might want to implement proper role checking)
+                var isAdmin = User?.IsInRole("Admin") ?? false;
                 if (!isAdmin)
                 {
-                    _logger.LogWarning(
-                        "AdminUpdateUserProfile Access Denied - User {CurrentUserId} is not an admin",
-                        currentUserGuid
-                    );
                     return Forbid();
                 }
 
-                var user = await _context.Users.FirstOrDefaultAsync(u =>
-                    u.Id == userId && u.IsActive && !u.IsDeleted
-                );
+                var user = await _context
+                    .Users.FirstOrDefaultAsync(u => u.Id == userId && u.IsActive && !u.IsDeleted);
 
                 if (user == null)
                 {
@@ -897,34 +766,26 @@ namespace ASafariM.Api.Controllers
                 }
 
                 // Update only provided fields
-                if (updateProfileDto.FirstName != null)
+                if (!string.IsNullOrEmpty(updateProfileDto.FirstName))
                     user.FirstName = updateProfileDto.FirstName;
 
-                if (updateProfileDto.LastName != null)
+                if (!string.IsNullOrEmpty(updateProfileDto.LastName))
                     user.LastName = updateProfileDto.LastName;
 
-                if (updateProfileDto.Bio != null)
+                if (!string.IsNullOrEmpty(updateProfileDto.Bio))
                     user.Bio = updateProfileDto.Bio;
 
-                if (updateProfileDto.Website != null)
+                if (!string.IsNullOrEmpty(updateProfileDto.Website))
                     user.Website = updateProfileDto.Website;
 
-                if (updateProfileDto.Location != null)
+                if (!string.IsNullOrEmpty(updateProfileDto.Location))
                     user.Location = updateProfileDto.Location;
 
-                if (updateProfileDto.Avatar != null)
+                if (!string.IsNullOrEmpty(updateProfileDto.Avatar))
                     user.Avatar = updateProfileDto.Avatar;
 
-                if (updateProfileDto.Email != null)
-                    user.Email = updateProfileDto.Email;
-
-                if (updateProfileDto.Role != null)
-                    user.Role = updateProfileDto.Role;
-
-                if (updateProfileDto.IsActive.HasValue)
-                    user.IsActive = updateProfileDto.IsActive.Value;
-
                 user.UpdatedAt = DateTime.UtcNow;
+
                 await _context.SaveChangesAsync();
 
                 var userDto = new UserDto
@@ -938,35 +799,18 @@ namespace ASafariM.Api.Controllers
                     Bio = user.Bio,
                     Website = user.Website,
                     Location = user.Location,
-                    Role = user.Role,
                     IsEmailVerified = user.IsEmailVerified,
-                    EmailVerifiedAt = user.EmailVerifiedAt,
-                    LastLoginAt = user.LastLoginAt,
                     CreatedAt = user.CreatedAt,
                     UpdatedAt = user.UpdatedAt,
-                    IsActive = user.IsActive,
                 };
 
-                _logger.LogInformation(
-                    "Admin {AdminId} successfully updated profile for user {UserId}",
-                    currentUserGuid,
-                    userId
-                );
-
                 return Ok(
-                    ApiResponse<UserDto>.SuccessResult(
-                        userDto,
-                        "User profile updated successfully by admin."
-                    )
+                    ApiResponse<UserDto>.SuccessResult(userDto, "User profile updated successfully by admin.")
                 );
             }
             catch (Exception ex)
             {
-                _logger.LogError(
-                    ex,
-                    "Error occurred while admin updating user profile for user {UserId}",
-                    userId
-                );
+                _logger.LogError(ex, "Error occurred while admin updating user profile {UserId}", userId);
                 return StatusCode(
                     500,
                     ApiResponse<UserDto>.ErrorResult(
@@ -982,77 +826,34 @@ namespace ASafariM.Api.Controllers
         {
             try
             {
-                var currentUserId =
-                    User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                    ?? User?.FindFirst("sub")?.Value
-                    ?? User?.FindFirst("id")?.Value;
-                if (
-                    string.IsNullOrEmpty(currentUserId)
-                    || !Guid.TryParse(currentUserId, out var currentUserGuid)
-                )
+                var adminUserId = User?.FindFirst("sub")?.Value ?? User?.FindFirst("id")?.Value;
+                if (string.IsNullOrEmpty(adminUserId) || !Guid.TryParse(adminUserId, out var adminUserGuid))
                 {
                     return Unauthorized(
                         ApiResponse<object>.ErrorResult("Invalid token.", statusCode: 401)
                     );
                 }
 
-                // Handle role claims (can be array in JWT) - try multiple claim types
-                var roleClaims = new List<string>();
+                // Check if admin user exists and has admin role
+                var adminUser = await _context
+                    .Users.FirstOrDefaultAsync(u => u.Id == adminUserGuid && u.IsActive && !u.IsDeleted);
 
-                // Try different possible role claim types
-                var roleClaimTypes = new[]
+                if (adminUser == null)
                 {
-                    "role",
-                    "roles",
-                    "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
-                    ClaimTypes.Role,
-                };
-
-                foreach (var claimType in roleClaimTypes)
-                {
-                    var claims =
-                        User?.FindAll(claimType)?.Select(c => c.Value).ToList()
-                        ?? new List<string>();
-                    if (claims.Any())
-                    {
-                        _logger.LogInformation(
-                            "AdminDeleteUser - Found roles in claim type '{ClaimType}': {Roles}",
-                            claimType,
-                            string.Join(", ", claims)
-                        );
-                        roleClaims.AddRange(claims);
-                    }
+                    return Unauthorized(
+                        ApiResponse<object>.ErrorResult("Admin user not found.", statusCode: 401)
+                    );
                 }
 
-                var isAdmin =
-                    roleClaims.Contains("Admin")
-                    || roleClaims.Contains("SuperAdmin")
-                    || roleClaims.Contains("admin")
-                    || roleClaims.Contains("superadmin");
-
+                // Check if user is admin (you might want to implement proper role checking)
+                var isAdmin = User?.IsInRole("Admin") ?? false;
                 if (!isAdmin)
                 {
-                    _logger.LogWarning(
-                        "AdminDeleteUser Access Denied - User {CurrentUserId} is not an admin",
-                        currentUserGuid
-                    );
                     return Forbid();
                 }
 
-                // Prevent admin from deleting themselves
-                if (currentUserGuid == userId)
-                {
-                    return BadRequest(
-                        ApiResponse<object>.ErrorResult(
-                            "Admins cannot delete their own account.",
-                            statusCode: 400
-                        )
-                    );
-                }
-
-                var user = await _context.Users.FirstOrDefaultAsync(u =>
-                    u.Id == userId && u.IsActive && !u.IsDeleted
-                );
+                var user = await _context
+                    .Users.FirstOrDefaultAsync(u => u.Id == userId && u.IsActive && !u.IsDeleted);
 
                 if (user == null)
                 {
@@ -1061,26 +862,22 @@ namespace ASafariM.Api.Controllers
                     );
                 }
 
-                // Soft delete the user
+                // Prevent admin from deleting themselves
+                if (user.Id == adminUserGuid)
+                {
+                    return BadRequest(
+                        ApiResponse<object>.ErrorResult("Admin cannot delete their own account.", statusCode: 400)
+                    );
+                }
+
+                // Soft delete
                 user.IsDeleted = true;
-                user.IsActive = false;
-                user.DeletedAt = DateTime.UtcNow;
                 user.UpdatedAt = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation(
-                    "Admin {AdminId} successfully deleted user {UserId} ({Username})",
-                    currentUserGuid,
-                    userId,
-                    user.Username
-                );
-
                 return Ok(
-                    ApiResponse<object>.SuccessResult(
-                        new { },
-                        "User deleted successfully by admin."
-                    )
+                    ApiResponse<object>.SuccessResult(default(object)!, "User deleted successfully by admin.")
                 );
             }
             catch (Exception ex)

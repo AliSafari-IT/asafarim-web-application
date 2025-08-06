@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using ASafariM.Api.Models.Enums;
 
 namespace ASafariM.Api.DTOs
 {
@@ -12,10 +13,7 @@ namespace ASafariM.Api.DTOs
         [StringLength(1000)]
         public string? Description { get; set; }
 
-        [StringLength(100)]
         public string Status { get; set; } = "Planning";
-
-        [StringLength(50)]
         public string Priority { get; set; } = "Medium";
 
         public DateTime? StartDate { get; set; }
@@ -39,6 +37,23 @@ namespace ASafariM.Api.DTOs
         public bool IsPublic { get; set; } = true;
         public bool IsFeatured { get; set; } = false;
 
+        [StringLength(10)]
+        public string? BudgetCurrency { get; set; }
+
+        [StringLength(5)]
+        public string? BudgetCurrencySymbol { get; set; }
+
+        public string? Category { get; set; }
+
+        [StringLength(255)]
+        public string? ImageUrl { get; set; }
+
+        [StringLength(255)]
+        public string? ImageAlt { get; set; }
+
+        public int? ImageWidth { get; set; }
+        public int? ImageHeight { get; set; }
+
         public List<string> TechStackIds { get; set; } = new List<string>();
     }
 
@@ -50,10 +65,7 @@ namespace ASafariM.Api.DTOs
         [StringLength(1000)]
         public string? Description { get; set; }
 
-        [StringLength(100)]
         public string? Status { get; set; }
-
-        [StringLength(50)]
         public string? Priority { get; set; }
 
         public DateTime? StartDate { get; set; }
@@ -80,6 +92,23 @@ namespace ASafariM.Api.DTOs
         public bool? IsPublic { get; set; }
         public bool? IsFeatured { get; set; }
 
+        [StringLength(10)]
+        public string? BudgetCurrency { get; set; }
+
+        [StringLength(5)]
+        public string? BudgetCurrencySymbol { get; set; }
+
+        public string? Category { get; set; }
+
+        [StringLength(255)]
+        public string? ImageUrl { get; set; }
+
+        [StringLength(255)]
+        public string? ImageAlt { get; set; }
+
+        public int? ImageWidth { get; set; }
+        public int? ImageHeight { get; set; }
+
         public List<string> TechStackIds { get; set; } = new List<string>();
     }
 
@@ -88,8 +117,8 @@ namespace ASafariM.Api.DTOs
         public Guid Id { get; set; }
         public string Title { get; set; } = string.Empty;
         public string? Description { get; set; }
-        public string Status { get; set; } = string.Empty;
-        public string Priority { get; set; } = string.Empty;
+        public string Status { get; set; } = "Planning";
+        public string Priority { get; set; } = "Medium";
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public DateTime? DueDate { get; set; }
@@ -101,6 +130,13 @@ namespace ASafariM.Api.DTOs
         public string? LiveUrl { get; set; }
         public bool IsPublic { get; set; }
         public bool IsFeatured { get; set; }
+        public string? BudgetCurrency { get; set; }
+        public string? BudgetCurrencySymbol { get; set; }
+        public string? Category { get; set; }
+        public string? ImageUrl { get; set; }
+        public string? ImageAlt { get; set; }
+        public int? ImageWidth { get; set; }
+        public int? ImageHeight { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public bool IsActive { get; set; }
@@ -118,13 +154,16 @@ namespace ASafariM.Api.DTOs
         public Guid Id { get; set; }
         public string Title { get; set; } = string.Empty;
         public string? Description { get; set; }
-        public string Status { get; set; } = string.Empty;
-        public string Priority { get; set; } = string.Empty;
+        public string Status { get; set; } = "Planning";
+        public string Priority { get; set; } = "Medium";
         public int Progress { get; set; }
         public List<string> Tags { get; set; } = new List<string>();
         public string? ThumbnailUrl { get; set; }
         public bool IsPublic { get; set; }
         public bool IsFeatured { get; set; }
+        public string? BudgetCurrency { get; set; }
+        public string? BudgetCurrencySymbol { get; set; }
+        public string? Category { get; set; }
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
@@ -133,6 +172,13 @@ namespace ASafariM.Api.DTOs
 
         public List<string> TechStackIds { get; set; } = new List<string>();
         public List<TechStackDto>? TechStacks { get; set; }
+    }
+
+    // ProjectTag DTO
+    public class ProjectTagDto
+    {
+        public string Name { get; set; } = string.Empty;
+        public string? NavigateTo { get; set; }
     }
 
     // Repository DTOs
@@ -203,6 +249,8 @@ namespace ASafariM.Api.DTOs
         public string? DocumentationUrl { get; set; }
         public string? OfficialWebsite { get; set; }
         public List<string> Features { get; set; } = new List<string>();
+        public string? Color { get; set; }
+        public string? Icon { get; set; }
         public bool IsActive { get; set; }
         public int PopularityRating { get; set; }
         public DateTime CreatedAt { get; set; }

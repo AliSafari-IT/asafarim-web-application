@@ -3,6 +3,7 @@ using System.Security.Claims;
 using ASafariM.Api.Data;
 using ASafariM.Api.DTOs;
 using ASafariM.Api.Models;
+using ASafariM.Api.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -170,6 +171,8 @@ namespace ASafariM.Api.Controllers
                     })
                     .ToListAsync();
 
+                _logger.LogInformation("Returning {Count} projects", projects.Count);
+
                 var response = PaginatedResponse<ProjectSummaryDto>.SuccessResult(
                     projects,
                     page,
@@ -209,17 +212,10 @@ namespace ASafariM.Api.Controllers
         {
             try
             {
-                _logger.LogInformation(
-                    "Admin requesting all projects - User: {User}, Role: {Role}",
-                    User.Identity?.Name,
-                    User.FindFirst("role")?.Value
-                );
-
                 var query = _context
                     .Projects.Include(p => p.User)
                     .Include(p => p.ProjectTechStacks)
                     .ThenInclude(pts => pts.TechStack)
-                    .Where(p => p.IsActive && !p.IsDeleted) // Only active, non-deleted projects
                     .AsQueryable();
 
                 // Apply search filter
@@ -228,7 +224,6 @@ namespace ASafariM.Api.Controllers
                     query = query.Where(p =>
                         p.Title.Contains(search)
                         || (p.Description != null && p.Description.Contains(search))
-                        || p.User.Username.Contains(search)
                     );
                 }
 
@@ -341,7 +336,6 @@ namespace ASafariM.Api.Controllers
                     .Projects.Include(p => p.User)
                     .Include(p => p.ProjectTechStacks)
                     .ThenInclude(pts => pts.TechStack)
-                    .Include(p => p.Repositories)
                     .FirstOrDefaultAsync(p => p.Id == id && p.IsActive && !p.IsDeleted);
 
                 if (project == null)
@@ -382,19 +376,25 @@ namespace ASafariM.Api.Controllers
                         {
                             Id = pts.TechStack.Id,
                             Name = pts.TechStack.Name,
-                            Category = pts.TechStack.Category,
                             Description = pts.TechStack.Description,
+                            Category = pts.TechStack.Category,
+                            TechVersion = pts.TechStack.TechVersion ?? string.Empty,
+                            IconUrl = pts.TechStack.IconUrl ?? string.Empty,
+                            DocumentationUrl = pts.TechStack.DocumentationUrl ?? string.Empty,
+                            OfficialWebsite = pts.TechStack.OfficialWebsite ?? string.Empty,
+                            Features = new List<string>(),
                             IsActive = pts.TechStack.IsActive,
+                            PopularityRating = 0,
+                            CreatedAt = pts.TechStack.CreatedAt,
+                            UpdatedAt = pts.TechStack.UpdatedAt,
+                            ProjectsCount = 0,
                         })
                         .ToList(),
-                    RepositoriesCount = project.Repositories.Count,
+                    RepositoriesCount = 0,
                 };
 
                 return Ok(
-                    ApiResponse<ProjectDto>.SuccessResult(
-                        projectDto,
-                        "Project retrieved successfully."
-                    )
+                    ApiResponse<ProjectDto>.SuccessResult(projectDto, "Project retrieved successfully.")
                 );
             }
             catch (Exception ex)
@@ -421,9 +421,7 @@ namespace ASafariM.Api.Controllers
                     .Where(x => x.Value?.Errors.Count > 0)
                     .ToDictionary(
                         kvp => kvp.Key,
-                        kvp =>
-                            kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray()
-                            ?? Array.Empty<string>()
+                        kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray() ?? Array.Empty<string>()
                     );
 
                 return BadRequest(
@@ -531,9 +529,18 @@ namespace ASafariM.Api.Controllers
                         {
                             Id = pts.TechStack.Id,
                             Name = pts.TechStack.Name,
-                            Category = pts.TechStack.Category,
                             Description = pts.TechStack.Description,
+                            Category = pts.TechStack.Category,
+                            TechVersion = pts.TechStack.TechVersion ?? string.Empty,
+                            IconUrl = pts.TechStack.IconUrl ?? string.Empty,
+                            DocumentationUrl = pts.TechStack.DocumentationUrl ?? string.Empty,
+                            OfficialWebsite = pts.TechStack.OfficialWebsite ?? string.Empty,
+                            Features = new List<string>(),
                             IsActive = pts.TechStack.IsActive,
+                            PopularityRating = 0,
+                            CreatedAt = pts.TechStack.CreatedAt,
+                            UpdatedAt = pts.TechStack.UpdatedAt,
+                            ProjectsCount = 0,
                         })
                         .ToList(),
                     RepositoriesCount = 0,
@@ -550,23 +557,13 @@ namespace ASafariM.Api.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(
-                    ex,
-                    "Error occurred while creating project. Details: {ErrorMessage}. StackTrace: {StackTrace}",
-                    ex.Message,
-                    ex.StackTrace
-                );
-
-                // Return more detailed error for debugging
-                var errorMessage = $"An error occurred while creating the project: {ex.Message}";
-                if (ex.InnerException != null)
-                {
-                    errorMessage += $" Inner exception: {ex.InnerException.Message}";
-                }
-
+                _logger.LogError(ex, "Error occurred while creating project");
                 return StatusCode(
                     500,
-                    ApiResponse<ProjectDto>.ErrorResult(errorMessage, statusCode: 500)
+                    ApiResponse<ProjectDto>.ErrorResult(
+                        "An error occurred while creating the project.",
+                        statusCode: 500
+                    )
                 );
             }
         }
@@ -583,9 +580,7 @@ namespace ASafariM.Api.Controllers
                     .Where(x => x.Value?.Errors.Count > 0)
                     .ToDictionary(
                         kvp => kvp.Key,
-                        kvp =>
-                            kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray()
-                            ?? Array.Empty<string>()
+                        kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray() ?? Array.Empty<string>()
                     );
 
                 return BadRequest(
@@ -604,8 +599,7 @@ namespace ASafariM.Api.Controllers
                 }
 
                 var project = await _context
-                    .Projects.Include(p => p.User)
-                    .Include(p => p.ProjectTechStacks)
+                    .Projects.Include(p => p.ProjectTechStacks)
                     .ThenInclude(pts => pts.TechStack)
                     .FirstOrDefaultAsync(p => p.Id == id && p.IsActive && !p.IsDeleted);
 
@@ -616,79 +610,17 @@ namespace ASafariM.Api.Controllers
                     );
                 }
 
-                // Check if user owns the project OR is an admin
-                // Debug: Log all available claims
-                _logger.LogInformation("=== ALL JWT CLAIMS DEBUG ===");
-                if (User?.Claims != null)
+                // Check if user owns the project or is admin
+                if (project.UserId != userGuid)
                 {
-                    foreach (var claim in User.Claims)
+                    var isAdmin = User?.IsInRole("Admin") ?? false;
+                    if (!isAdmin)
                     {
-                        _logger.LogInformation(
-                            "Claim Type: {Type}, Value: {Value}",
-                            claim.Type,
-                            claim.Value
-                        );
-                    }
-                }
-                _logger.LogInformation("=== END CLAIMS DEBUG ===");
-
-                // Handle role claims (can be array in JWT) - try multiple claim types
-                var roleClaims = new List<string>();
-
-                // Try different possible role claim types
-                var roleClaimTypes = new[]
-                {
-                    "role",
-                    "roles",
-                    "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
-                    ClaimTypes.Role,
-                };
-
-                foreach (var claimType in roleClaimTypes)
-                {
-                    var claims =
-                        User?.FindAll(claimType)?.Select(c => c.Value).ToList()
-                        ?? new List<string>();
-                    if (claims.Any())
-                    {
-                        _logger.LogInformation(
-                            "Found roles in claim type '{ClaimType}': {Roles}",
-                            claimType,
-                            string.Join(", ", claims)
-                        );
-                        roleClaims.AddRange(claims);
+                        return Forbid();
                     }
                 }
 
-                var userRole = roleClaims.FirstOrDefault();
-                var isAdmin =
-                    roleClaims.Contains("Admin")
-                    || roleClaims.Contains("SuperAdmin")
-                    || roleClaims.Contains("admin")
-                    || roleClaims.Contains("superadmin");
-
-                _logger.LogInformation("Role Claims Found: {Roles}", string.Join(", ", roleClaims));
-                _logger.LogInformation(
-                    "UpdateProject Permission Check - UserId: {UserId}, ProjectOwner: {ProjectOwner}, UserRole: {UserRole}, IsAdmin: {IsAdmin}",
-                    userGuid,
-                    project.UserId,
-                    userRole,
-                    isAdmin
-                );
-
-                if (project.UserId != userGuid && !isAdmin)
-                {
-                    _logger.LogWarning(
-                        "UpdateProject Access Denied - User {UserId} with role {UserRole} cannot edit project {ProjectId} owned by {ProjectOwner}",
-                        userGuid,
-                        userRole,
-                        project.Id,
-                        project.UserId
-                    );
-                    return Forbid();
-                }
-
-                // Update only provided fields
+                // Update project properties
                 if (!string.IsNullOrEmpty(updateProjectDto.Title))
                     project.Title = updateProjectDto.Title;
 
@@ -803,21 +735,25 @@ namespace ASafariM.Api.Controllers
                         {
                             Id = pts.TechStack.Id,
                             Name = pts.TechStack.Name,
-                            Category = pts.TechStack.Category,
                             Description = pts.TechStack.Description,
+                            Category = pts.TechStack.Category,
+                            TechVersion = pts.TechStack.TechVersion ?? string.Empty,
+                            IconUrl = pts.TechStack.IconUrl ?? string.Empty,
+                            DocumentationUrl = pts.TechStack.DocumentationUrl ?? string.Empty,
+                            OfficialWebsite = pts.TechStack.OfficialWebsite ?? string.Empty,
+                            Features = new List<string>(),
                             IsActive = pts.TechStack.IsActive,
+                            PopularityRating = 0,
+                            CreatedAt = pts.TechStack.CreatedAt,
+                            UpdatedAt = pts.TechStack.UpdatedAt,
+                            ProjectsCount = 0,
                         })
                         .ToList(),
-                    RepositoriesCount = await _context.Repositories.CountAsync(r =>
-                        r.ProjectId == project.Id
-                    ),
+                    RepositoriesCount = 0,
                 };
 
                 return Ok(
-                    ApiResponse<ProjectDto>.SuccessResult(
-                        projectDto,
-                        "Project updated successfully."
-                    )
+                    ApiResponse<ProjectDto>.SuccessResult(projectDto, "Project updated successfully.")
                 );
             }
             catch (Exception ex)
@@ -846,9 +782,8 @@ namespace ASafariM.Api.Controllers
                     );
                 }
 
-                var project = await _context.Projects.FirstOrDefaultAsync(p =>
-                    p.Id == id && p.IsActive && !p.IsDeleted
-                );
+                var project = await _context
+                    .Projects.FirstOrDefaultAsync(p => p.Id == id && p.IsActive && !p.IsDeleted);
 
                 if (project == null)
                 {
@@ -857,87 +792,25 @@ namespace ASafariM.Api.Controllers
                     );
                 }
 
-                // Check if user owns the project OR is an admin
-                // Debug: Log all available claims
-                _logger.LogInformation("=== DELETE PROJECT - ALL JWT CLAIMS DEBUG ===");
-                if (User?.Claims != null)
+                // Check if user owns the project or is admin
+                if (project.UserId != userGuid)
                 {
-                    foreach (var claim in User.Claims)
+                    var isAdmin = User?.IsInRole("Admin") ?? false;
+                    if (!isAdmin)
                     {
-                        _logger.LogInformation(
-                            "Claim Type: {Type}, Value: {Value}",
-                            claim.Type,
-                            claim.Value
-                        );
+                        return Forbid();
                     }
-                }
-                _logger.LogInformation("=== END DELETE CLAIMS DEBUG ===");
-
-                // Handle role claims (can be array in JWT) - try multiple claim types
-                var roleClaims = new List<string>();
-
-                // Try different possible role claim types
-                var roleClaimTypes = new[]
-                {
-                    "role",
-                    "roles",
-                    "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
-                    ClaimTypes.Role,
-                };
-
-                foreach (var claimType in roleClaimTypes)
-                {
-                    var claims =
-                        User?.FindAll(claimType)?.Select(c => c.Value).ToList()
-                        ?? new List<string>();
-                    if (claims.Any())
-                    {
-                        _logger.LogInformation(
-                            "Found roles in claim type '{ClaimType}': {Roles}",
-                            claimType,
-                            string.Join(", ", claims)
-                        );
-                        roleClaims.AddRange(claims);
-                    }
-                }
-
-                var userRole = roleClaims.FirstOrDefault();
-                var isAdmin =
-                    roleClaims.Contains("Admin")
-                    || roleClaims.Contains("SuperAdmin")
-                    || roleClaims.Contains("admin")
-                    || roleClaims.Contains("superadmin");
-
-                _logger.LogInformation("Role Claims Found: {Roles}", string.Join(", ", roleClaims));
-                _logger.LogInformation(
-                    "DeleteProject Permission Check - UserId: {UserId}, ProjectOwner: {ProjectOwner}, UserRole: {UserRole}, IsAdmin: {IsAdmin}",
-                    userGuid,
-                    project.UserId,
-                    userRole,
-                    isAdmin
-                );
-
-                if (project.UserId != userGuid && !isAdmin)
-                {
-                    _logger.LogWarning(
-                        "DeleteProject Access Denied - User {UserId} with role {UserRole} cannot delete project {ProjectId} owned by {ProjectOwner}",
-                        userGuid,
-                        userRole,
-                        project.Id,
-                        project.UserId
-                    );
-                    return Forbid();
                 }
 
                 // Soft delete
                 project.IsDeleted = true;
-                project.DeletedAt = DateTime.UtcNow;
-                project.DeletedBy = userGuid.ToString();
+                project.UpdatedBy = userGuid.ToString();
+                project.UpdatedAt = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();
 
                 return Ok(
-                    ApiResponse<object>.SuccessResult(new { }, "Project deleted successfully.")
+                    ApiResponse<object>.SuccessResult(default(object)!, "Project deleted successfully.")
                 );
             }
             catch (Exception ex)
@@ -953,7 +826,6 @@ namespace ASafariM.Api.Controllers
             }
         }
 
-        // Get tech stacks for a given project id
         [HttpGet("{id}/techstacks")]
         public async Task<ActionResult<ApiResponse<List<TechStackDto>>>> GetTechStacksForProject(
             Guid id
@@ -969,7 +841,7 @@ namespace ASafariM.Api.Controllers
                 if (project == null)
                 {
                     return NotFound(
-                        ApiResponse<object>.ErrorResult("Project not found.", statusCode: 404)
+                        ApiResponse<List<TechStackDto>>.ErrorResult("Project not found.", statusCode: 404)
                     );
                 }
 
@@ -978,22 +850,35 @@ namespace ASafariM.Api.Controllers
                     {
                         Id = pts.TechStack.Id,
                         Name = pts.TechStack.Name,
+                        Description = pts.TechStack.Description,
+                        Category = pts.TechStack.Category,
+                        TechVersion = pts.TechStack.TechVersion ?? string.Empty,
+                        IconUrl = pts.TechStack.IconUrl ?? string.Empty,
+                        DocumentationUrl = pts.TechStack.DocumentationUrl ?? string.Empty,
+                        OfficialWebsite = pts.TechStack.OfficialWebsite ?? string.Empty,
+                        Features = new List<string>(),
+                        IsActive = pts.TechStack.IsActive,
+                        PopularityRating = 0,
+                        CreatedAt = pts.TechStack.CreatedAt,
+                        UpdatedAt = pts.TechStack.UpdatedAt,
+                        ProjectsCount = 0,
                     })
                     .ToList();
 
-                return Ok(ApiResponse<List<TechStackDto>>.SuccessResult(techStacks));
+                return Ok(
+                    ApiResponse<List<TechStackDto>>.SuccessResult(
+                        techStacks,
+                        "Tech stacks retrieved successfully."
+                    )
+                );
             }
             catch (Exception ex)
             {
-                _logger.LogError(
-                    ex,
-                    "Error occurred while fetching tech stacks for project {ProjectId}",
-                    id
-                );
+                _logger.LogError(ex, "Error occurred while retrieving tech stacks for project {ProjectId}", id);
                 return StatusCode(
                     500,
-                    ApiResponse<object>.ErrorResult(
-                        "An error occurred while fetching tech stacks.",
+                    ApiResponse<List<TechStackDto>>.ErrorResult(
+                        "An error occurred while retrieving tech stacks.",
                         statusCode: 500
                     )
                 );

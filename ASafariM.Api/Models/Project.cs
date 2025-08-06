@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using ASafariM.Api.Models.Enums;
 
 namespace ASafariM.Api.Models
 {
@@ -52,7 +53,7 @@ namespace ASafariM.Api.Models
         public bool IsFeatured { get; set; } = false;
 
         [StringLength(50)]
-        public string? Category { get; set; } = "Other";
+        public string? Category { get; set; }
 
         // Image properties
         [StringLength(255)]
@@ -76,6 +77,9 @@ namespace ASafariM.Api.Models
 
         public List<RelatedProject> RelatedProjects { get; set; } = new List<RelatedProject>();
 
+        // Tags relationship - for clickable tags with navigation
+        public virtual ICollection<ProjectTag> ProjectTags { get; set; } = new List<ProjectTag>();
+
         // Foreign Keys
         [Required]
         public Guid UserId { get; set; }
@@ -85,88 +89,14 @@ namespace ASafariM.Api.Models
         public virtual User User { get; set; } = null!;
 
         public virtual ICollection<Repository> Repositories { get; set; } = new List<Repository>();
-        
+
         // Many-to-many relationship with TechStacks
-        public virtual ICollection<ProjectTechStack> ProjectTechStacks { get; set; } = new List<ProjectTechStack>();
-        
+        public virtual ICollection<ProjectTechStack> ProjectTechStacks { get; set; } =
+            new List<ProjectTechStack>();
+
         // Helper property to get TechStacks directly
         [NotMapped]
-        public virtual ICollection<TechStack> TechStacks => ProjectTechStacks.Select(pts => pts.TechStack).ToList();
-    }
-
-    // Supporting classes for complex properties
-    public class ProjectLink
-    {
-        public Guid Id { get; set; } = Guid.NewGuid();
-        
-        [Required]
-        [StringLength(100)]
-        public string Label { get; set; } = string.Empty;
-
-        [StringLength(50)]
-        public string? Type { get; set; } // 'demo' | 'repo' | 'documentation' | 'custom'
-
-        [StringLength(500)]
-        public string? Url { get; set; }
-
-        [StringLength(255)]
-        public string? Icon { get; set; }
-
-        [StringLength(20)]
-        public string? Target { get; set; } // '_blank' | '_self' | '_parent' | '_top'
-
-        [StringLength(100)]
-        public string? ClassName { get; set; }
-
-        [StringLength(1000)]
-        public string? Style { get; set; } // JSON string for CSS properties
-
-        // Foreign key to Project
-        public Guid ProjectId { get; set; }
-        
-        [ForeignKey("ProjectId")]
-        public virtual Project Project { get; set; } = null!;
-    }
-
-    public class RelatedProject
-    {
-        public Guid Id { get; set; } = Guid.NewGuid();
-        
-        [Required]
-        [StringLength(200)]
-        public string Title { get; set; } = string.Empty;
-
-        [StringLength(1000)]
-        public string? Description { get; set; }
-
-        [StringLength(255)]
-        public string? ImageUrl { get; set; }
-
-        [StringLength(255)]
-        public string? ImageAlt { get; set; }
-
-        public int? ImageWidth { get; set; }
-
-        public int? ImageHeight { get; set; }
-
-        // Repository link
-        [StringLength(500)]
-        public string? RepoUrl { get; set; }
-
-        [StringLength(100)]
-        public string? RepoLabel { get; set; }
-
-        // Demo link
-        [StringLength(500)]
-        public string? DemoUrl { get; set; }
-
-        [StringLength(100)]
-        public string? DemoLabel { get; set; }
-
-        // Foreign key to Project
-        public Guid ProjectId { get; set; }
-        
-        [ForeignKey("ProjectId")]
-        public virtual Project Project { get; set; } = null!;
+        public virtual ICollection<TechStack> TechStacks =>
+            ProjectTechStacks.Select(pts => pts.TechStack).ToList();
     }
 }

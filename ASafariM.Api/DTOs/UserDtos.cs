@@ -113,12 +113,15 @@ namespace ASafariM.Api.DTOs
     // User Preferences DTOs
     public class UserPreferencesDto
     {
+        public Guid Id { get; set; }
         public string Theme { get; set; } = "light";
         public string Language { get; set; } = "en";
         public string Timezone { get; set; } = "UTC";
         public bool EmailNotifications { get; set; } = true;
         public bool PushNotifications { get; set; } = true;
         public string ProjectVisibility { get; set; } = "public";
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
     }
 
     public class UpdateUserPreferencesDto

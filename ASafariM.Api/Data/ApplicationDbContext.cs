@@ -17,6 +17,10 @@ namespace ASafariM.Api.Data
         public DbSet<Repository> Repositories { get; set; }
         public DbSet<ProjectTechStack> ProjectTechStacks { get; set; }
 
+        public DbSet<ProjectTag> ProjectTags { get; set; }
+        public DbSet<ProjectLink> ProjectLinks { get; set; }
+        public DbSet<RelatedProject> RelatedProjects { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -83,6 +87,26 @@ namespace ASafariM.Api.Data
                 .HasOne(up => up.User)
                 .WithOne(u => u.Preferences)
                 .HasForeignKey<UserPreferences>(up => up.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Configure ProjectTag relationship
+            modelBuilder.Entity<ProjectTag>()
+                .HasOne(pt => pt.Project)
+                .WithMany(p => p.ProjectTags)
+                .HasForeignKey(pt => pt.ProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+            // Configure ProjectLink relationship
+            modelBuilder.Entity<ProjectLink>()
+                .HasOne(pl => pl.Project)
+                .WithMany(p => p.Links)
+                .HasForeignKey(pl => pl.ProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Configure RelatedProject relationship
+            modelBuilder.Entity<RelatedProject>()
+                .HasOne(rp => rp.Project)
+                .WithMany(p => p.RelatedProjects)
+                .HasForeignKey(rp => rp.ProjectId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Configure indexes

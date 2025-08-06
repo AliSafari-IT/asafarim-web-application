@@ -35,12 +35,21 @@ namespace ASafariM.Api.Models
         [Range(1, 5)]
         public int PopularityRating { get; set; } = 3;
 
+        // Additional properties for frontend compatibility
+        [StringLength(50)]
+        public string? Color { get; set; } = "#666666";
+
+        [StringLength(255)]
+        public string? Icon { get; set; } // Alternative icon property
+
         // Navigation properties
         // Many-to-many relationship with Projects
-        public virtual ICollection<ProjectTechStack> ProjectTechStacks { get; set; } = new List<ProjectTechStack>();
-        
+        public virtual ICollection<ProjectTechStack> ProjectTechStacks { get; set; } =
+            new List<ProjectTechStack>();
+
         // Helper property to get Projects directly
         [NotMapped]
-        public virtual ICollection<Project> Projects => ProjectTechStacks.Select(pts => pts.Project).ToList();
+        public virtual ICollection<Project> Projects =>
+            ProjectTechStacks.Select(pts => pts.Project).ToList();
     }
 }
