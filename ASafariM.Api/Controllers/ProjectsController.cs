@@ -135,7 +135,7 @@ namespace ASafariM.Api.Controllers
                         Description = p.Description,
                         Status = p.Status,
                         Priority = p.Priority,
-                        Progress = p?.Progress,
+                        Progress = p.Progress,
                         Tags = p.Tags,
                         ThumbnailUrl = p.ThumbnailUrl,
                         IsPublic = p.IsPublic,

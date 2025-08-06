@@ -12,8 +12,8 @@ importers:
         specifier: ^1.1.1
         version: 1.1.1(@types/react@18.3.23)(react-dom@18.3.1(react@18.3.1))(react-router-dom@6.30.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
       '@asafarim/paginated-project-grid':
-        specifier: ^1.3.0
-        version: 1.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^1.4.1
+        version: 1.4.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@asafarim/react-themes':
         specifier: ^1.5.0
         version: 1.5.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -93,14 +93,14 @@ packages:
       react-dom: ^18.0.0
       react-router-dom: ^6.0.0
 
-  '@asafarim/paginated-project-grid@1.3.0':
-    resolution: {integrity: sha512-ev4PgoSRUovVuOFgK8R9F0AGUGvFcu6MMtHRx1BmUu4Om9Z7N0Nb/EtUJV12hwA8NzSn9Rat7DFv90lLIpruVw==}
+  '@asafarim/paginated-project-grid@1.4.1':
+    resolution: {integrity: sha512-54Q8izFzf1fHk3Q2vXnsf7fNLDmcVV9i4oqjrJY7TmxmYKLPEMbuDtPaS1AGIayPbVcWO6FPciBYaNJW3MeU4A==}
     peerDependencies:
       react: ^17.0.0 || ^18.0.0
       react-dom: ^17.0.0 || ^18.0.0
 
-  '@asafarim/project-card@1.3.0':
-    resolution: {integrity: sha512-/pl0BtzxFM0TNYnUhmDZIgtx+0CwPt26xYYDqnXjL5RX7f5KWNaz3As+3LFurctMB5ic0XqgnclURkiEMuM+XA==}
+  '@asafarim/project-card@1.4.3':
+    resolution: {integrity: sha512-DN8BXyXeXz7oX9wr+7l6O234NMA/l6rtaKeLAv+xMHMd5sRag/4YE5fwXRKMD+fJatobhfhjJGIBFEl0jXZjVQ==}
     peerDependencies:
       react: ^17.0.0 || ^18.0.0
       react-dom: ^17.0.0 || ^18.0.0
@@ -1679,13 +1679,13 @@ snapshots:
       - '@types/react'
       - supports-color
 
-  '@asafarim/paginated-project-grid@1.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@asafarim/paginated-project-grid@1.4.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
-      '@asafarim/project-card': 1.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@asafarim/project-card': 1.4.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  '@asafarim/project-card@1.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@asafarim/project-card@1.4.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
